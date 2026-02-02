@@ -92,17 +92,20 @@
 					Sélectionnez le circuit principal. Les formules disponibles dépendent du circuit choisi.
 				</p>
 				<div class="flex flex-col gap-3">
-					<label class="text-sm font-medium">Circuit</label>
-					<select
-						class="rounded-lg border border-[rgb(var(--c-border))] px-3 py-2"
-						value={$selectedCircuitId}
-						on:change={(event) => actions.setCircuit(event.currentTarget.value)}
-					>
-						<option value="">Choisir un circuit</option>
-						{#each circuits as circuit}
-							<option value={circuit.id}>{circuit.nom}</option>
-						{/each}
-					</select>
+					<label class="flex flex-col gap-1 text-sm font-medium" for="circuit-select">
+						<span>Circuit</span>
+						<select
+							id="circuit-select"
+							class="rounded-lg border border-[rgb(var(--c-border))] px-3 py-2"
+							value={$selectedCircuitId}
+							on:change={(event) => actions.setCircuit(event.currentTarget.value)}
+						>
+							<option value="">Choisir un circuit</option>
+							{#each circuits as circuit}
+								<option value={circuit.id}>{circuit.nom}</option>
+							{/each}
+						</select>
+					</label>
 					{#if $currentCircuit}
 						<div class="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-bg))] p-4">
 							<p class="text-sm">
@@ -125,15 +128,18 @@
 					Indiquez le nombre total de participants. Le maximum dépend des places restantes sur la formule.
 				</p>
 				<div class="flex flex-col gap-3">
-					<label class="text-sm font-medium">Nombre de participants</label>
-					<input
-						type="number"
-						min="1"
-						max={$placesRestantes}
-						class="rounded-lg border border-[rgb(var(--c-border))] px-3 py-2"
-						value={$participantsCount}
-						on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
-					/>
+					<label class="flex flex-col gap-1 text-sm font-medium" for="participants-count">
+						<span>Nombre de participants</span>
+						<input
+							id="participants-count"
+							type="number"
+							min="1"
+							max={$placesRestantes}
+							class="rounded-lg border border-[rgb(var(--c-border))] px-3 py-2"
+							value={$participantsCount}
+							on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
+						/>
+					</label>
 					<p class="text-xs text-[rgb(var(--c-text2))]">
 						Places restantes: {$placesRestantes}
 					</p>

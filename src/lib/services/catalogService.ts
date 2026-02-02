@@ -1,4 +1,4 @@
-import { PUBLIC_API_BASE_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 export type CatalogOption = {
 	id: string;
@@ -45,11 +45,12 @@ export type CatalogLoadResult = {
  */
 export async function loadCatalog(fetcher: typeof fetch = fetch): Promise<CatalogLoadResult> {
 	const fallbackUrl = '/mock/catalog.json';
+	const baseUrl = env.PUBLIC_API_BASE_URL;
 
 	// NOTE: PUBLIC_API_BASE_URL est volontairement optionnel pour le mode offline.
-	if (PUBLIC_API_BASE_URL) {
+	if (baseUrl) {
 		try {
-			const response = await fetcher(`${PUBLIC_API_BASE_URL}/api/catalog`);
+			const response = await fetcher(`${baseUrl}/api/catalog`);
 			if (response.ok) {
 				const catalog = (await response.json()) as Catalog;
 				return { catalog, source: 'api' };
