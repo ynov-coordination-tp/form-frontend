@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+	Thème global via variables CSS.
+	Tailwind peut consommer ces variables en RGB grâce à la syntaxe: rgb(var(--c-bg)).
+	Cela permet un thème unique, cohérent et facilement maintenable.
+*/
+:root {
+	--c-bg: 243 247 255; /* #F3F7FF */
+	--c-card: 10 42 79; /* #0A2A4F */
+	--c-card-2: 11 53 101; /* #0B3565 */
+	--c-accent: 47 107 255; /* #2F6BFF */
+	--c-border: 217 227 245; /* #D9E3F5 */
+	--c-text: 15 23 42; /* #0F172A */
+	--c-text2: 71 85 105; /* #475569 */
+
+	--c-success: 22 163 74; /* #16A34A */
+	--c-warning: 245 158 11; /* #F59E0B */
+	--c-error: 220 38 38; /* #DC2626 */
+
+	--radius: 18px;
+}
+
+body {
+	@apply bg-[rgb(var(--c-bg))] text-[rgb(var(--c-text))] font-inter;
+}
