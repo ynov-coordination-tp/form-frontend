@@ -8,9 +8,9 @@ Ce fichier est la **source de vérité** du projet front.
 
 ## 0) Objectif MVP
 
-Remplacer le Google Form existant par un **formulaire web** permettant de créer un **devis multi-participants** (multi-moto) et de l’envoyer au backend.
+Créer un **formulaire web** (SvelteKit) pour générer une **demande de devis multi-participants** (multi-moto) et l’envoyer à l’API mockée (JSONServer).
 
-Le parcours est un **fil d’Ariane / stepper** en 5 étapes :
+Parcours en **fil d’Ariane / stepper** en 5 étapes :
 
 1) Tour
 2) Participants
@@ -18,10 +18,10 @@ Le parcours est un **fil d’Ariane / stepper** en 5 étapes :
 4) Formulaire
 5) Envoi
 
-Règles navigation :
+Navigation :
 - ✅ Retour arrière autorisé
-- ✅ Avance uniquement si l’étape est **valide**
-- ✅ Confirmation après réussite de l’API
+- ✅ Avance uniquement si étape **valide**
+- ✅ Confirmation après succès API
 - ❌ Pré-remplissage via query params : **V2**
 
 ---
@@ -30,29 +30,47 @@ Règles navigation :
 
 - Framework : **SvelteKit + TypeScript**
 - UI : **Tailwind CSS**
-- Thème : variables CSS dans `:root` (1 thème pour le moment)
-- Validation : **sans zod** (validation TypeScript “maison”)
-- Data / Mock : **JSONServer**
-- Base URL API : via `.env` avec `PUBLIC_API_BASE_URL`
-- Les routes consommées par le front sont **préfixées par `/api/...`**
+- Thème : variables CSS `:root` (1 seul thème actuellement)
+- Validation : **sans zod** (validation TS “maison”)
+- Mock API : **JSONServer**
+- Base URL : `.env` (`PUBLIC_API_BASE_URL`)
+- Toutes les routes consommées sont préfixées `/api/...`
 
 ---
 
 ## 2) Environnement
 
 ### Variables
-- `.env.example` doit exister :
-    - `PUBLIC_API_BASE_URL=http://localhost:3000`
+- `.env.example` :
+  - `PUBLIC_API_BASE_URL=http://localhost:3000`
 
 Convention :
-- `PUBLIC_API_BASE_URL` est l’origine de l’API (JSONServer en MVP).
-- Si la variable est absente, fallback sur same-origin.
+- `PUBLIC_API_BASE_URL` = origine JSONServer en MVP
+- Si absent => fallback same-origin
 
 ---
 
-## 3) JSONServer — Rewrites (fournis)
+## 3) JSONServer — Schéma des données (db.json)
 
-Le JSONServer utilise les rewrites suivants :
+Le mock JSONServer contient notamment :
+- `clients`
+- `devis`
+- `devis_lignes`
+- `circuits`
+- `formules`
+- `circuit_formules`
+- `motos`
+- `options`
+- `formule_options`
+- `devis_ligne_options`
+- `pays`, `villes`
+- `sessions_zeus`
+
+But MVP : **créer un devis** (et idéalement ses lignes) à partir d’une saisie utilisateur.
+
+---
+
+## 4) JSONServer — Rewrites (fournis)
 
 ```json
 {
