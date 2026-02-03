@@ -35,8 +35,8 @@
 
 	const steps = [
 		{ label: 'Tour', index: 0 },
-		{ label: 'Participants', index: 1 },
-		{ label: 'Formule', index: 2 },
+		{ label: 'Formule', index: 1 },
+		{ label: 'Participants', index: 2 },
 		{ label: 'Formulaire', index: 3 },
 		{ label: 'Envoi', index: 4 }
 	];
@@ -115,37 +115,7 @@
 			{/if}
 
 			{#if $stepIndex === 1}
-				<h2 class="mb-4 text-xl font-semibold">2) Participants</h2>
-				<p class="mb-4 text-sm text-[var(--c-text2)]">
-					Indiquez le nombre total de participants. Le maximum dépend des places restantes sur la formule.
-				</p>
-				<div class="flex flex-col gap-3">
-					<label class="flex items-center gap-4 text-sm font-medium" for="participants-count">
-						<span>Nombre de participants</span>
-						<input
-							id="participants-count"
-							type="number"
-							min="1"
-							max={$placesRestantes}
-							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
-							value={$participantsCount}
-							on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
-						/>
-						{#if $currentFormula}
-						<p class="text-xs text-[var(--c-text2)]">
-							Places restantes: {$placesRestantes}
-						</p>
-						{/if}
-					</label>
-
-					{#if $visibleErrors.participantsCount}
-						<p class="text-sm text-[var(--c-error)]">{$visibleErrors.participantsCount}</p>
-					{/if}
-				</div>
-			{/if}
-
-			{#if $stepIndex === 2}
-				<h2 class="mb-4 text-xl font-semibold">3) Formule</h2>
+				<h2 class="mb-4 text-xl font-semibold">2) Formule</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">
 					Veuillez choisir parmi les formules disponibles.
 				</p>
@@ -157,14 +127,13 @@
 					<div class="grid gap-4 md:grid-cols-3">
 						{#each $currentCircuit.formules as formule}
 							<button
-								type="button"
-								class={`flex flex-col gap-3 rounded-[var(--radius)] border p-4 text-left transition card ${
+									type="button"
+									class={`flex flex-col gap-3 rounded-[var(--radius)] border p-4 text-left transition card ${
 									$selectedFormulaId === formule.id
 										? 'card-selected border-[var(--c-accent)] bg-[var(--c-bg)]'
 										: 'border-[var(--c-border)] bg-white'
 								}`}
-								on:click={() => actions.setFormula(formule.id)}
-							>
+									on:click={() => actions.setFormula(formule.id)}>
 								<div class="flex items-center justify-between">
 									<h3 class="font-cinzel text-lg font-semibold">{formule.code}</h3>
 									<span class="text-xs">{formule.nom}</span>
@@ -173,8 +142,8 @@
 								<p class="text-xs opacity-95">
 									Places restantes:{' '}
 									{formule.maxParticipant && formule.currParticipant
-										? formule.maxParticipant - formule.currParticipant
-										: fallbackMaxParticipants}
+											? formule.maxParticipant - formule.currParticipant
+											: fallbackMaxParticipants}
 								</p>
 							</button>
 						{/each}
@@ -183,6 +152,36 @@
 				{#if $visibleErrors.formulaId}
 					<p class="mt-3 text-sm text-[var(--c-error)]">{$visibleErrors.formulaId}</p>
 				{/if}
+			{/if}
+
+			{#if $stepIndex === 2}
+				<h2 class="mb-4 text-xl font-semibold">3) Participants</h2>
+				<p class="mb-4 text-sm text-[var(--c-text2)]">
+					Indiquez le nombre total de participants. Le maximum dépend des places restantes sur la formule.
+				</p>
+				<div class="flex flex-col gap-3">
+					<label class="flex items-center gap-4 text-sm font-medium" for="participants-count">
+						<span>Nombre de participants</span>
+						<input
+								id="participants-count"
+								type="number"
+								min="1"
+								max={$placesRestantes}
+								class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+								value={$participantsCount}
+								on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
+						/>
+						{#if $currentFormula}
+							<p class="text-xs text-[var(--c-text2)]">
+								Places restantes: {$placesRestantes}
+							</p>
+						{/if}
+					</label>
+
+					{#if $visibleErrors.participantsCount}
+						<p class="text-sm text-[var(--c-error)]">{$visibleErrors.participantsCount}</p>
+					{/if}
+				</div>
 			{/if}
 
 			{#if $stepIndex === 3}
@@ -322,8 +321,14 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							Total estimé: {formatPrice($totalPrice)}
+							Total {$participantsCount > 1 ? 'individuel' : ' '} estimé:
+							<span class="ml-auto">{formatPrice($totalPrice)}</span>
 						</div>
+						{#if $participantsCount > 1}
+						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
+							Total collectif estimé: {formatPrice($totalPrice * $participantsCount)}
+						</div>
+						{/if}
 					</aside>
 				</div>
 			{/if}
@@ -374,7 +379,13 @@
 								</ul>
 							{/if}
 						</div>
-						<span class="flex mt-3 text-sm font-semibold">Total: <span class="ml-auto">{formatPrice($totalPrice)}</span></span>
+						<div class="flex mt-3 text-sm font-semibold">
+							Total {$participantsCount > 1 ? 'individuel' : ' '} estimé:
+							<span class="ml-auto">{formatPrice($totalPrice)}</span>
+						</div>
+						{#if $participantsCount > 1}
+						<span class="flex mt-3 text-sm font-semibold">Total collectif: <span class="ml-auto">{formatPrice($totalPrice * $participantsCount)}</span></span>
+						{/if}
 					</div>
 
 					<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
@@ -392,8 +403,7 @@
 					<button
 						type="button"
 						class="rounded-full bg-[var(--c-accent)] px-5 py-2 text-sm font-semibold text-white"
-						on:click={() => actions.submit()}
-					>
+						on:click={() => actions.submit()}>
 						Envoyer la demande
 					</button>
 				</div>
