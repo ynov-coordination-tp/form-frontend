@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--light: #FAFAFA;
+	--dark: #0C0C0C;
+	--c-bg: #F3F7FF;
+	--c-card: #0A2A4F;
+	--c-card-hover: #071c35;
+	--c-card-2: #0B3565;
+	--c-accent: #2F6BFF;
+	--c-border: #2450c5;
+	--c-text: #0F172A;
+	--c-text2: #475569;
+
+	--c-success: #16A34A;
+	--c-warning: #F59E0B;
+	--c-error: #DC2626;
+	--c-inactive: #D9E3F5;
+
+	--radius: 18px;
+}
+
+body {
+	@apply bg-[var(--c-bg)] text-[var(--c-text)] font-inter;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	color: var(--c-accent);
+}
+
+.card {
+	background-color: var(--c-card);
+	border-color: var(--c-border);
+	color: var(--light);
+}
+
+.card:hover {
+	background-color: var(--c-card-hover);
+	border-color: var(--c-accent);
+}
+
+.card-selected {
+	background-color: var(--c-card-2) !important;
+}

@@ -1,0 +1,145 @@
+{
+	"circuits": [
+		{
+			"id": "circuit-crete",
+			"nom": "Grand Tour de Crète",
+			"duree_jours": 13,
+			"distance_km": 1850,
+			"formules": [
+				{
+					"id": "formule-zeus",
+					"code": "ZEUS",
+					"nom": "Zeus Classique",
+					"prix_base": 2190,
+					"maxParticipant": 12,
+					"currParticipant": 5,
+					"options": [
+						{
+							"id": "opt-hotel-premium",
+							"name": "Hôtels 4★ côté mer",
+							"price": 420,
+							"type": "hotel",
+							"idObjet": "hotel-crete-premium"
+						},
+						{
+							"id": "opt-moto-solo",
+							"name": "Moto solo (supplément)",
+							"price": 280,
+							"type": "moto",
+							"idObjet": "moto-solo-crete"
+						},
+						{
+							"id": "opt-vols-aegean",
+							"name": "Vols Aegean Airlines",
+							"price": 360,
+							"type": "vols",
+							"idObjet": "vols-aegean"
+						}
+					]
+				},
+				{
+					"id": "formule-poseidon",
+					"code": "POSEIDON",
+					"nom": "Poseidon Premium",
+					"prix_base": 2690,
+					"maxParticipant": 10,
+					"currParticipant": 8,
+					"startDate": "2025-06-01",
+					"endDate": "2025-06-14",
+					"options": [
+						{
+							"id": "opt-hotel-luxe",
+							"name": "Hôtels 5★ + spas",
+							"price": 690,
+							"type": "hotel",
+							"idObjet": "hotel-crete-luxe"
+						},
+						{
+							"id": "opt-transfert-vip",
+							"name": "Transferts VIP privés",
+							"price": 210,
+							"type": "transfert",
+							"idObjet": "transfert-vip"
+						}
+					]
+				},
+				{
+					"id": "formule-athena",
+					"code": "ATHENA",
+					"nom": "Athena Confort",
+					"prix_base": 1990,
+					"options": [
+						{
+							"id": "opt-hotel-charme",
+							"name": "Hôtels charme locaux",
+							"price": 240,
+							"type": "hotel",
+							"idObjet": "hotel-crete-charme"
+						},
+						{
+							"id": "opt-vols-flex",
+							"name": "Vols flexibles",
+							"price": 180,
+							"type": "vols",
+							"idObjet": "vols-flex"
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "circuit-peloponnese",
+			"nom": "Péloponnèse Mythique",
+			"duree_jours": 10,
+			"distance_km": 1400,
+			"formules": [
+				{
+					"id": "formule-zeus-p",
+					"code": "ZEUS",
+					"nom": "Zeus Essentiel",
+					"prix_base": 1890,
+					"maxParticipant": 14,
+					"currParticipant": 4,
+					"options": [
+						{
+							"id": "opt-moto-duo",
+							"name": "Moto duo (supplément)",
+							"price": 190,
+							"type": "moto",
+							"idObjet": "moto-duo-pelo"
+						},
+						{
+							"id": "opt-vols-olympic",
+							"name": "Vols Olympic Air",
+							"price": 310,
+							"type": "vols",
+							"idObjet": "vols-olympic"
+						}
+					]
+				},
+				{
+					"id": "formule-athena-p",
+					"code": "ATHENA",
+					"nom": "Athena Panorama",
+					"prix_base": 2050,
+					"options": [
+						{
+							"id": "opt-hotel-panorama",
+							"name": "Hôtels panoramiques",
+							"price": 260,
+							"type": "hotel",
+							"idObjet": "hotel-panorama"
+						},
+						{
+							"id": "opt-transfert-navette",
+							"name": "Navette aéroport",
+							"price": 95,
+							"type": "transfert",
+							"idObjet": "transfert-navette"
+						}
+					]
+				}
+			]
+		}
+	]
+}
