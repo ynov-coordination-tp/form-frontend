@@ -9,6 +9,9 @@
 	export let statuses: ('incomplete' | 'error' | 'valid')[] = [];
 	export let onStepClick: (index: number) => void;
 
+	// Optional aria label so parents can translate it.
+	export let ariaLabel = 'Steps';
+
 	const statusStyles = {
 		incomplete: 'bg-[var(--c-inactive)] text-[var(--c-text)]',
 		error: 'bg-[var(--c-error)] text-white',
@@ -16,7 +19,7 @@
 	};
 </script>
 
-<nav aria-label="Étapes" class="w-full">
+<nav aria-label={ariaLabel} class="w-full">
 	<ol class="flex flex-wrap items-center gap-1">
 		{#each steps as step (step.index)}
 			<li class="flex items-center gap-3">
@@ -37,8 +40,8 @@
 					<span class="text-sm">{step.label}</span>
 				</button>
 			</li>
-			{#if step.index !== (steps.length -1)}
-			<span>-</span>
+			{#if step.index !== steps.length - 1}
+				<span>-</span>
 			{/if}
 		{/each}
 	</ol>
