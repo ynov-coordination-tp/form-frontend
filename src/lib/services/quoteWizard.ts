@@ -1,5 +1,6 @@
 import { derived, get, writable } from 'svelte/store';
-import type {Catalog, CatalogCircuit, CatalogFormula, CatalogOption} from "$lib/services/catalogService.js";
+import { t } from '$lib/i18n';
+import type { Catalog, CatalogCircuit, CatalogFormula, CatalogOption } from '$lib/services/catalogService.js';
 
 export type LeadInfo = {
 	prenom: string;
@@ -23,7 +24,16 @@ const EMPTY_LEAD: LeadInfo = {
 	telephone: ''
 };
 
+// Internal list used only to size arrays (labels are provided by the UI).
 const STEP_LABELS = ['Tour', 'Participants', 'Formule', 'Formulaire', 'Envoi'];
+
+// Tiny helper for very small interpolations (ex: {count}).
+// This keeps the i18n system simple and avoids external dependencies.
+const formatMessage = (template: string, values: Record<string, string | number>) => {
+	return Object.entries(values).reduce((message, [key, value]) => {
+		return message.replace(`{${key}}`, String(value));
+	}, template);
+};
 
 const createEmptyTouched = (): Record<string, boolean> => ({
 	circuitId: false,
@@ -121,8 +131,19 @@ export function createQuoteWizard(catalog: Catalog, options: QuoteWizardOptions)
 		return basePrice + optionsTotal;
 	});
 
+	// Validation errors are derived from form state + current locale.
+	// Because we include `t` in the dependencies, errors re-render when the locale changes.
 	const rawErrors = derived(
-		[selectedCircuitId, selectedFormulaId, participantsCount, lead, dateDepart, dateRetour, placesRestantes],
+		[
+			selectedCircuitId,
+			selectedFormulaId,
+			participantsCount,
+			lead,
+			dateDepart,
+			dateRetour,
+			placesRestantes,
+			t
+		],
 		([
 			$selectedCircuitId,
 			$selectedFormulaId,
@@ -130,48 +151,55 @@ export function createQuoteWizard(catalog: Catalog, options: QuoteWizardOptions)
 			$lead,
 			$dateDepart,
 			$dateRetour,
-			$placesRestantes
+			$placesRestantes,
+			$t
 		]) => {
 			const errors: Record<string, string> = {};
 
 			if (!$selectedCircuitId) {
-				errors.circuitId = 'Merci de choisir un circuit.';
+				errors.circuitId = $t('ui.errors.selectCircuit');
 			}
 
 			if (!$selectedFormulaId) {
-				errors.formulaId = 'Merci de sélectionner une formule.';
+				errors.formulaId = $t('ui.errors.selectFormula');
 			}
 
 			if (!$participantsCount || $participantsCount < 1) {
-				errors.participantsCount = 'Le nombre de participants doit être au moins 1.';
+				errors.participantsCount = $t('ui.errors.participantsMin');
 			}
 
 			if ($participantsCount > $placesRestantes) {
-				errors.participantsCount = `Maximum disponible: ${$placesRestantes} participants.`;
+				errors.participantsCount = formatMessage($t('ui.errors.participantsMax'), {
+					count: $placesRestantes
+				});
 			}
 
 			if (!$lead.prenom.trim()) {
-				errors.leadPrenom = 'Le prénom est requis.';
+				errors.leadPrenom = formatMessage($t('ui.errors.required'), {
+					field: $t('ui.fields.firstNameLabel')
+				});
 			}
 
 			if (!$lead.nom.trim()) {
-				errors.leadNom = 'Le nom est requis.';
+				errors.leadNom = formatMessage($t('ui.errors.required'), {
+					field: $t('ui.fields.lastNameLabel')
+				});
 			}
 
 			if (!$lead.email.includes('@')) {
-				errors.leadEmail = 'Email invalide (doit contenir @).';
+				errors.leadEmail = $t('ui.errors.emailInvalid');
 			}
 
 			if (!$lead.telephone.trim()) {
-				errors.leadTelephone = 'Le téléphone est requis.';
+				errors.leadTelephone = $t('ui.errors.phoneInvalid');
 			}
 
 			if (!$dateDepart) {
-				errors.dateDepart = 'La date de départ est requise.';
+				errors.dateDepart = $t('ui.errors.dateDepartRequired');
 			}
 
 			if (!$dateRetour) {
-				errors.dateRetour = 'La date de retour est manquante.';
+				errors.dateRetour = $t('ui.errors.dateReturnMissing');
 			}
 
 			return errors;
@@ -311,10 +339,9 @@ export function createQuoteWizard(catalog: Catalog, options: QuoteWizardOptions)
 
 		const errors = get(rawErrors);
 		if (Object.keys(errors).length > 0) {
+			const translate = get(t);
 			submissionStatus.set('error');
-			submissionMessage.set(
-				'Certains champs sont invalides. Corrigez les erreurs indiquées avant d’envoyer.'
-			);
+			submissionMessage.set(translate('ui.messages.submitBlocked'));
 			stepIndex.set(4);
 			return { ok: false, errors };
 		}
@@ -322,16 +349,18 @@ export function createQuoteWizard(catalog: Catalog, options: QuoteWizardOptions)
 		const summary = buildSummary();
 
 		if (options.isOffline) {
+			const translate = get(t);
 			console.log('[offline quote]', summary);
 			submissionStatus.set('success');
-			submissionMessage.set('Demande enregistrée localement (offline).');
+			submissionMessage.set(translate('ui.messages.offlineSuccess'));
 			return { ok: true, summary };
 		}
 
 		// TODO: brancher l'API quand elle sera disponible.
+		const translate = get(t);
 		console.log('[online quote placeholder]', summary);
 		submissionStatus.set('success');
-		submissionMessage.set('Demande envoyée avec succès.');
+		submissionMessage.set(translate('ui.messages.submitSuccess'));
 		return { ok: true, summary };
 	};
 
