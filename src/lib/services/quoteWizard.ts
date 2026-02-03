@@ -1,5 +1,5 @@
 import { derived, get, writable } from 'svelte/store';
-import type { Catalog, CatalogCircuit, CatalogFormula, CatalogOption } from './catalogService';
+import type {Catalog, CatalogCircuit, CatalogFormula, CatalogOption} from "$lib/services/catalogService.js";
 
 export type LeadInfo = {
 	prenom: string;
@@ -77,7 +77,7 @@ export function createQuoteWizard(catalog: Catalog, options: QuoteWizardOptions)
 	const submissionMessage = writable<string>('');
 	const hasSubmitted = writable(false);
 
-	const circuits = catalog.circuits ?? [];
+	const circuits: CatalogCircuit[] = catalog.circuits ?? [];
 
 	const currentCircuit = derived(selectedCircuitId, ($selectedCircuitId): CatalogCircuit | null => {
 		return circuits.find((circuit) => circuit.id === $selectedCircuitId) ?? null;
