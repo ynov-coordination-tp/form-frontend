@@ -1,0 +1,6 @@
+services:
+  form-frontend:
+    build: .
+    container_name: form-frontend
+    ports:
+      - "5173:5173"
