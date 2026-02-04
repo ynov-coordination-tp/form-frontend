@@ -1,8 +1,10 @@
 <script lang="ts">
 	import BreadcrumbStepper from '$lib/components/BreadcrumbStepper.svelte';
+	import { t } from '$lib/i18n';
 	import { createQuoteWizard } from '$lib/services/quoteWizard.js';
-	import type { PageData } from "../../../.svelte-kit/types/src/routes/quote/$types.js";
+	import type { PageData } from '../../../.svelte-kit/types/src/routes/quote/$types.js';
 
+	// Page data injected by SvelteKit's load function.
 	export let data: PageData;
 
 	const wizard = createQuoteWizard(data.catalog, { isOffline: data.isOffline });
@@ -33,21 +35,25 @@
 		stepStatuses
 	} = derived;
 
-	const steps = [
-		{ label: 'Tour', index: 0 },
-		{ label: 'Formule', index: 1 },
-		{ label: 'Participants', index: 2 },
-		{ label: 'Formulaire', index: 3 },
-		{ label: 'Envoi', index: 4 }
+	// Reactive step labels: when `$t` changes, the stepper updates automatically.
+	let steps: { label: string; index: number }[] = [];
+	$: steps = [
+		{ label: $t('ui.step.tour'), index: 0 },
+		{ label: $t('ui.step.formula'), index: 1 },
+		{ label: $t('ui.step.participants'), index: 2 },
+		{ label: $t('ui.step.form'), index: 3 },
+		{ label: $t('ui.step.submit'), index: 4 }
 	];
 
 	const fallbackMaxParticipants = 10;
 
+	// Note: price formatting is kept simple here; it is not part of the i18n system.
 	const formatPrice = (value: number) => `${value.toLocaleString('fr-FR')} €`;
 </script>
 
 <svelte:head>
-	<title>Hellenic Riders — Demande de devis</title>
+	<!-- Even the document title is localized. -->
+	<title>{$t('ui.quote.title')}</title>
 </svelte:head>
 
 <main class="min-h-screen bg-[var(--c-bg)] px-4 py-10">
@@ -56,16 +62,14 @@
 			<p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--c-accent)]">
 				Hellenic Riders
 			</p>
-			<h1 class="text-3xl font-bold text-[var(--c-text)]">
-				Demande de devis
-			</h1>
+			<h1 class="text-3xl font-bold text-[var(--c-text)]">{$t('ui.quote.heading')}</h1>
 			{#if data.isOffline}
 				<div
 					class="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--c-warning)]"
 				>
-					<span>Mode offline</span>
+					<span>{$t('ui.quote.offlineMode')}</span>
 					<span aria-hidden="true">•</span>
-					<span>catalog mock</span>
+					<span>{$t('ui.quote.mockCatalog')}</span>
 				</div>
 			{/if}
 		</header>
@@ -74,25 +78,26 @@
 			{steps}
 			currentStep={$stepIndex}
 			statuses={$stepStatuses}
+			ariaLabel={$t('ui.stepper.aria')}
 			onStepClick={(index) => actions.goToStep(index)}
 		/>
 
 		<section class="rounded-[var(--radius)] bg-white p-6 shadow-sm">
 			{#if $stepIndex === 0}
-				<h2 class="mb-4 text-xl font-semibold">1) Choix du circuit</h2>
+				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.circuitChoiceTitle')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">
-					Sélectionnez le circuit principal. Les formules disponibles dépendent du circuit choisi.
+					{$t('ui.sections.circuitChoiceDescription')}
 				</p>
 				<div class="flex flex-col gap-3">
 					<label class="flex items-center gap-4 text-sm font-medium" for="circuit-select">
-						<span>Circuit</span>
+						<span>{$t('ui.fields.circuitLabel')}</span>
 						<select
 							id="circuit-select"
 							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
 							value={$selectedCircuitId}
 							on:change={(event) => actions.setCircuit(event.currentTarget.value)}
 						>
-							<option value="">Choisir un circuit</option>
+							<option value="">{$t('ui.fields.circuitPlaceholder')}</option>
 							{#each circuits as circuit}
 								<option value={circuit.id}>{circuit.nom}</option>
 							{/each}
@@ -101,10 +106,12 @@
 					{#if $currentCircuit}
 						<div class="rounded-lg border border-[var(--c-border)] bg-[var(--c-bg)] p-4">
 							<p class="text-sm">
-								Durée: <strong>{$currentCircuit.duree_jours} jours</strong>
+								{$t('ui.fields.durationLabel')}:
+								<strong>{$currentCircuit.duree_jours} {$t('ui.units.days')}</strong>
 							</p>
 							<p class="text-sm">
-								Distance: <strong>{$currentCircuit.distance_km} km</strong>
+								{$t('ui.fields.distanceLabel')}:
+								<strong>{$currentCircuit.distance_km} {$t('ui.units.kilometers')}</strong>
 							</p>
 						</div>
 					{/if}
@@ -115,35 +122,39 @@
 			{/if}
 
 			{#if $stepIndex === 1}
-				<h2 class="mb-4 text-xl font-semibold">2) Formule</h2>
+				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.formulaTitle')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">
-					Veuillez choisir parmi les formules disponibles.
+					{$t('ui.sections.formulaDescription')}
 				</p>
 				{#if !$currentCircuit}
 					<p class="text-sm text-[var(--c-text2)]">
-						Sélectionnez d'abord un circuit pour voir les formules disponibles.
+						{$t('ui.sections.formulaNeedCircuit')}
 					</p>
 				{:else}
 					<div class="grid gap-4 md:grid-cols-3">
 						{#each $currentCircuit.formules as formule}
 							<button
-									type="button"
-									class={`flex flex-col gap-3 rounded-[var(--radius)] border p-4 text-left transition card ${
+								type="button"
+								class={`flex flex-col gap-3 rounded-[var(--radius)] border p-4 text-left transition card ${
 									$selectedFormulaId === formule.id
 										? 'card-selected border-[var(--c-accent)] bg-[var(--c-bg)]'
 										: 'border-[var(--c-border)] bg-white'
 								}`}
-									on:click={() => actions.setFormula(formule.id)}>
+								on:click={() => actions.setFormula(formule.id)}
+							>
 								<div class="flex items-center justify-between">
 									<h3 class="font-cinzel text-lg font-semibold">{formule.code}</h3>
 									<span class="text-xs">{formule.nom}</span>
 								</div>
-								<p class="text-sm opacity-95">Base: {formatPrice(formule.prix_base)}</p>
+								<p class="text-sm opacity-95">
+									{$t('ui.fields.basePriceLabel')}:
+									{formatPrice(formule.prix_base)}
+								</p>
 								<p class="text-xs opacity-95">
-									Places restantes:{' '}
+									{$t('ui.fields.remainingSeatsLabel')}:{' '}
 									{formule.maxParticipant && formule.currParticipant
-											? formule.maxParticipant - formule.currParticipant
-											: fallbackMaxParticipants}
+										? formule.maxParticipant - formule.currParticipant
+										: fallbackMaxParticipants}
 								</p>
 							</button>
 						{/each}
@@ -155,25 +166,25 @@
 			{/if}
 
 			{#if $stepIndex === 2}
-				<h2 class="mb-4 text-xl font-semibold">3) Participants</h2>
+				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.participantsTitle')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">
-					Indiquez le nombre total de participants. Le maximum dépend des places restantes sur la formule.
+					{$t('ui.sections.participantsDescription')}
 				</p>
 				<div class="flex flex-col gap-3">
 					<label class="flex items-center gap-4 text-sm font-medium" for="participants-count">
-						<span>Nombre de participants</span>
+						<span>{$t('ui.fields.participantsCountLabel')}</span>
 						<input
-								id="participants-count"
-								type="number"
-								min="1"
-								max={$placesRestantes}
-								class="rounded-lg border border-[var(--c-border)] px-3 py-2"
-								value={$participantsCount}
-								on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
+							id="participants-count"
+							type="number"
+							min="1"
+							max={$placesRestantes}
+							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+							value={$participantsCount}
+							on:input={(event) => actions.setParticipantsCount(Number(event.currentTarget.value))}
 						/>
 						{#if $currentFormula}
 							<p class="text-xs text-[var(--c-text2)]">
-								Places restantes: {$placesRestantes}
+								{$t('ui.fields.remainingSeatsLabel')}: {$placesRestantes}
 							</p>
 						{/if}
 					</label>
@@ -185,14 +196,14 @@
 			{/if}
 
 			{#if $stepIndex === 3}
-				<h2 class="mb-4 text-xl font-semibold">4) Informations & options</h2>
+				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.infoOptionsTitle')}</h2>
 				<div class="grid gap-6 lg:grid-cols-[2fr,1fr]">
 					<div class="flex flex-col gap-6">
 						<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-							<h3 class="mb-3 text-lg font-semibold">Contact principal</h3>
+							<h3 class="mb-3 text-lg font-semibold">{$t('ui.sections.contactTitle')}</h3>
 							<div class="grid gap-3 md:grid-cols-2">
 								<label class="flex flex-col gap-1 text-sm">
-									Prénom
+									{$t('ui.fields.firstNameLabel')}
 									<input
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
 										value={$lead.prenom}
@@ -203,7 +214,7 @@
 									{/if}
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									Nom
+									{$t('ui.fields.lastNameLabel')}
 									<input
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
 										value={$lead.nom}
@@ -214,7 +225,7 @@
 									{/if}
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									Email
+									{$t('ui.fields.emailLabel')}
 									<input
 										type="email"
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
@@ -226,7 +237,7 @@
 									{/if}
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									Téléphone
+									{$t('ui.fields.phoneLabel')}
 									<input
 										type="tel"
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
@@ -241,10 +252,10 @@
 						</div>
 
 						<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-							<h3 class="mb-3 text-lg font-semibold">Dates</h3>
+							<h3 class="mb-3 text-lg font-semibold">{$t('ui.sections.datesTitle')}</h3>
 							<div class="grid gap-3 md:grid-cols-2">
 								<label class="flex flex-col gap-1 text-sm">
-									Date de départ
+									{$t('ui.fields.departureDateLabel')}
 									<input
 										type="date"
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
@@ -257,7 +268,7 @@
 									{/if}
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									Date de retour (calculée)
+									{$t('ui.fields.returnDateComputedLabel')}
 									<input
 										type="date"
 										class="rounded-lg border border-[var(--c-border)] px-3 py-2"
@@ -273,15 +284,17 @@
 						</div>
 
 						<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-							<h3 class="mb-3 text-lg font-semibold">Options</h3>
+							<h3 class="mb-3 text-lg font-semibold">{$t('ui.sections.optionsTitle')}</h3>
 							{#if !$currentFormula}
 								<p class="text-sm text-[var(--c-text2)]">
-									Sélectionnez une formule pour afficher les options disponibles.
+									{$t('ui.sections.optionsNeedFormula')}
 								</p>
 							{:else}
 								<ul class="flex flex-col gap-3">
 									{#each $currentFormula.options as option}
-										<li class="flex items-center justify-between rounded-lg border border-[var(--c-border)] px-3 py-2">
+										<li
+											class="flex items-center justify-between rounded-lg border border-[var(--c-border)] px-3 py-2"
+										>
 											<label class="flex items-center gap-2 text-sm">
 												<input
 													type="checkbox"
@@ -300,15 +313,17 @@
 					</div>
 
 					<aside class="flex flex-col gap-4 rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-						<h3 class="text-lg font-semibold">Récapitulatif</h3>
+						<h3 class="text-lg font-semibold">{$t('ui.sections.summaryTitle')}</h3>
 						<div class="text-sm">
-							<p>Formule: {$currentFormula?.nom ?? '—'}</p>
-							<p class="mt-1">Base: {formatPrice($currentFormula?.prix_base ?? 0)}</p>
+							<p>{$t('ui.fields.formulaLabel')}: {$currentFormula?.nom ?? '—'}</p>
+							<p class="mt-1">
+								{$t('ui.fields.baseLabel')}: {formatPrice($currentFormula?.prix_base ?? 0)}
+							</p>
 						</div>
 						<div>
-							<h4 class="text-sm font-semibold">Options sélectionnées</h4>
+							<h4 class="text-sm font-semibold">{$t('ui.sections.selectedOptionsTitle')}</h4>
 							{#if $selectedOptions.length === 0}
-								<p class="text-xs text-[var(--c-text2)]">Aucune option sélectionnée.</p>
+								<p class="text-xs text-[var(--c-text2)]">{$t('ui.messages.noOptionsSelected')}</p>
 							{:else}
 								<ul class="mt-2 flex flex-col gap-2 text-sm">
 									{#each $selectedOptions as option}
@@ -321,33 +336,34 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							Total {$participantsCount > 1 ? 'individuel' : ' '} estimé:
+							{$participantsCount > 1
+								? $t('ui.fields.totalEstimatedIndividual')
+								: $t('ui.fields.totalEstimatedSingle')}
+							:
 							<span class="ml-auto">{formatPrice($totalPrice)}</span>
 						</div>
 						{#if $participantsCount > 1}
-						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							Total collectif estimé: {formatPrice($totalPrice * $participantsCount)}
-						</div>
+							<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
+								{$t('ui.fields.totalCollectiveEstimated')}: {formatPrice($totalPrice * $participantsCount)}
+							</div>
 						{/if}
 					</aside>
 				</div>
 			{/if}
 
 			{#if $stepIndex === 4}
-				<h2 class="mb-4 text-xl font-semibold">5) Envoi</h2>
-				<p class="mb-4 text-sm text-[var(--c-text2)]">
-					Vérifiez le récapitulatif puis envoyez votre demande.
-				</p>
+				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.submitTitle')}</h2>
+				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.submitDescription')}</p>
 
-			{#if $submissionStatus === 'success'}
-				<div class="mb-4 rounded-[var(--radius)] border border-[var(--c-success)] bg-white p-4">
-					<p class="text-sm font-semibold text-[var(--c-success)]">{$submissionMessage}</p>
-					{#if data.isOffline}
-						<p class="text-xs text-[var(--c-text2)]">
-							Un récapitulatif a été loggué dans la console (mode offline).
-						</p>
-					{/if}
-				</div>
+				{#if $submissionStatus === 'success'}
+					<div class="mb-4 rounded-[var(--radius)] border border-[var(--c-success)] bg-white p-4">
+						<p class="text-sm font-semibold text-[var(--c-success)]">{$submissionMessage}</p>
+						{#if data.isOffline}
+							<p class="text-xs text-[var(--c-text2)]">
+								{$t('ui.messages.offlineSummaryLogged')}
+							</p>
+						{/if}
+					</div>
 				{:else if $submissionStatus === 'error'}
 					<div class="mb-4 rounded-[var(--radius)] border border-[var(--c-error)] bg-white p-4">
 						<p class="text-sm font-semibold text-[var(--c-error)]">{$submissionMessage}</p>
@@ -356,18 +372,32 @@
 
 				<div class="grid gap-4 md:grid-cols-2">
 					<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-						<h3 class="mb-2 text-lg font-semibold">Votre devis</h3>
+						<h3 class="mb-2 text-lg font-semibold">{$t('ui.sections.quoteSummaryTitle')}</h3>
 						<ul class="text-sm text-[var(--c-text2)]">
-							<li class="mr-2"><strong>Circuit:</strong> {$currentCircuit?.nom ?? '—'}</li>
-							<li class="flex mr-2"><strong>Formule:</strong> {$currentFormula?.nom ?? '—'} <span class="ml-auto">{formatPrice($currentFormula?.prix_base ?? 0) ?? '-'}</span></li>
-							<li class="mr-2"><strong>Participants:</strong> {$participantsCount}</li>
-							<li class="mr-2"><strong>Départ:</strong> {$dateDepart ?? '—'}</li>
-							<li class="mr-2"><strong>Retour:</strong> {$dateRetour ?? '—'}</li>
+							<li class="mr-2">
+								<strong>{$t('ui.fields.circuitLabel')}:</strong> {$currentCircuit?.nom ?? '—'}
+							</li>
+							<li class="flex mr-2">
+								<strong>{$t('ui.fields.formulaLabel')}:</strong>
+								{$currentFormula?.nom ?? '—'}
+								<span class="ml-auto">
+									{formatPrice($currentFormula?.prix_base ?? 0) ?? '-'}
+								</span>
+							</li>
+							<li class="mr-2">
+								<strong>{$t('ui.fields.participantsLabel')}:</strong> {$participantsCount}
+							</li>
+							<li class="mr-2">
+								<strong>{$t('ui.fields.departureLabel')}:</strong> {$dateDepart ?? '—'}
+							</li>
+							<li class="mr-2">
+								<strong>{$t('ui.fields.returnLabel')}:</strong> {$dateRetour ?? '—'}
+							</li>
 						</ul>
 						<div class="mt-3">
-							<h4 class="text-sm font-semibold">Options</h4>
+							<h4 class="text-sm font-semibold">{$t('ui.sections.optionsTitle')}</h4>
 							{#if $selectedOptions.length === 0}
-								<p class="text-xs text-[var(--c-text2)]">Aucune option.</p>
+								<p class="text-xs text-[var(--c-text2)]">{$t('ui.messages.noOptions')}</p>
 							{:else}
 								<ul class="mt-2 flex flex-col gap-1 text-sm">
 									{#each $selectedOptions as option}
@@ -380,21 +410,35 @@
 							{/if}
 						</div>
 						<div class="flex mt-3 text-sm font-semibold">
-							Total {$participantsCount > 1 ? 'individuel' : ' '} estimé:
+							{$participantsCount > 1
+								? $t('ui.fields.totalEstimatedIndividual')
+								: $t('ui.fields.totalEstimatedSingle')}
+							:
 							<span class="ml-auto">{formatPrice($totalPrice)}</span>
 						</div>
 						{#if $participantsCount > 1}
-						<span class="flex mt-3 text-sm font-semibold">Total collectif: <span class="ml-auto">{formatPrice($totalPrice * $participantsCount)}</span></span>
+							<span class="flex mt-3 text-sm font-semibold">
+								{$t('ui.fields.totalCollective')}: 
+								<span class="ml-auto">{formatPrice($totalPrice * $participantsCount)}</span>
+							</span>
 						{/if}
 					</div>
 
 					<div class="rounded-[var(--radius)] border border-[var(--c-border)] p-4">
-						<h3 class="mb-2 text-lg font-semibold">Contact principal</h3>
+						<h3 class="mb-2 text-lg font-semibold">{$t('ui.sections.contactTitle')}</h3>
 						<ul class="text-sm text-[var(--c-text2)]">
-							<li><strong>Prénom:</strong> {$lead.prenom || '—'}</li>
-							<li><strong>Nom:</strong> {$lead.nom || '—'}</li>
-							<li><strong>Email:</strong> {$lead.email || '—'}</li>
-							<li><strong>Téléphone:</strong> {$lead.telephone || '—'}</li>
+							<li>
+								<strong>{$t('ui.fields.firstNameLabel')}:</strong> {$lead.prenom || '—'}
+							</li>
+							<li>
+								<strong>{$t('ui.fields.lastNameLabel')}:</strong> {$lead.nom || '—'}
+							</li>
+							<li>
+								<strong>{$t('ui.fields.emailLabel')}:</strong> {$lead.email || '—'}
+							</li>
+							<li>
+								<strong>{$t('ui.fields.phoneLabel')}:</strong> {$lead.telephone || '—'}
+							</li>
 						</ul>
 					</div>
 				</div>
@@ -403,8 +447,9 @@
 					<button
 						type="button"
 						class="rounded-full bg-[var(--c-accent)] px-5 py-2 text-sm font-semibold text-white"
-						on:click={() => actions.submit()}>
-						Envoyer la demande
+						on:click={() => actions.submit()}
+					>
+						{$t('ui.actions.submit')}
 					</button>
 				</div>
 			{/if}
