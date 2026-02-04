@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { derived, writable } from 'svelte/store';
-import en from './locales/en';
-import fr from './locales/fr';
+import en from "$lib/i18n/locales/en.js";
+import fr from "$lib/i18n/locales/fr.js";
 
 // -- Types -------------------------------------------------------------------
 // We keep the locale type small and explicit to make it easy to extend later.
@@ -17,10 +17,10 @@ const dictionaries: Record<Locale, Record<string, string>> = {
 };
 
 const STORAGE_KEY = 'app.locale';
-const AVAILABLE_LOCALES: Locale[] = ['en', 'fr'];
+const AVAILABLE_LOCALES: Set<Locale> = new Set(['en', 'fr']);
 
 const isLocale = (value: string): value is Locale => {
-	return AVAILABLE_LOCALES.includes(value as Locale);
+	return AVAILABLE_LOCALES.has(value as Locale);
 };
 
 // -- Store: current locale ----------------------------------------------------
