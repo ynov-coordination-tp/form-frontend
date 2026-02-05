@@ -547,12 +547,12 @@
 			{#if stepIndex === 2}
 				<h2 class="mb-4 text-xl font-semibold">3) {$t('ui.step.dates')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.datesDescription')}</p>
-				<div class="grid gap-3 md:grid-cols-2">
+				<div class="flex flex-col sm:flex-row gap-5">
 					<label class="flex flex-col gap-1 text-sm">
 						{$t('ui.fields.departureDateLabel')}
 						<input
 							type="date"
-							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+							class="w-[8rem] rounded-lg border border-[var(--c-border)] px-3 py-2"
 							disabled={!selectedTour}
 							value={departureDate}
 							on:input={(event) => (departureDate = event.currentTarget.value)}
@@ -565,7 +565,7 @@
 						{$t('ui.fields.returnDateComputedLabel')}
 						<input
 							type="date"
-							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+							class="w-[8rem] rounded-lg border border-[var(--c-border)] px-3 py-2"
 							readonly
 							disabled
 							value={returnDate}
@@ -583,7 +583,7 @@
 						id="participants-count"
 						type="number"
 						min="1"
-						class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+						class="rounded-lg border border-[var(--c-border)] w-[4rem] px-3 py-2"
 						value={participantsCount}
 						on:input={(event) => (participantsCount = Number(event.currentTarget.value))}
 					/>
@@ -721,9 +721,9 @@
 							<p class="mt-1">{$t('ui.fields.participantsLabel')}: {participantsCount}</p>
 						</div>
 						<div class="text-sm">
-							<p>{$t('ui.fields.formulaPriceLabel')}: {selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</p>
-							<p class="mt-1">Moto: {selectedMotoDailyPrice !== null ? `${formatPrice(selectedMotoDailyPrice)} / jour` : '—'}</p>
-							<p class="mt-1">Hébergement: {selectedAccommodationNightlyPrice !== null ? `${formatPrice(selectedAccommodationNightlyPrice)} / nuit` : '—'}</p>
+							<p class="flex">{$t('ui.fields.formulaPriceLabel')}: <span class="ml-auto">{selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</span></p>
+							<p class="mt-1 flex">Moto: <span class="ml-auto">{selectedMotoDailyPrice !== null ? `${formatPrice(selectedMotoDailyPrice)} / jour` : '—'}</span></p>
+							<p class="mt-1 flex">Hébergement: <span class="ml-auto">{selectedAccommodationNightlyPrice !== null ? `${formatPrice(selectedAccommodationNightlyPrice)} / nuit` : '—'}</span></p>
 						</div>
 						<div>
 							<h4 class="text-sm font-semibold">{$t('ui.sections.selectedOptionsTitle')}</h4>
@@ -741,8 +741,8 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							<p>{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
-									<p class="mt-2">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
+							<p class="flex">{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
+							<p class="mt-2 flex">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
 						</div>
 					</aside>
 					</div>
@@ -816,8 +816,8 @@
 							</li>
 						</ul>
 						<div class="mt-3 rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							<p>{$t('ui.fields.totalEstimatedIndividual')}: {formatPrice(totalEstimatedIndividual)}</p>
-							<p class="mt-1">{$t('ui.fields.totalCollectiveEstimated')}: {formatPrice(totalEstimatedGroup)}</p>
+							<p class="flex">{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
+							<p class="mt-1 flex">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
 						</div>
 					</div>
 				</div>
