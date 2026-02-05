@@ -408,7 +408,7 @@
 		const totalOptionsPrice = selectedOptions.reduce((sum, option) => sum + (option.price ?? 0), 0);
 		const motoTotal = (selectedMotoDailyPrice ?? 0) * durationDays;
 		const accommodationTotal = (selectedAccommodationNightlyPrice ?? 0) * durationDays;
-			totalEstimatedIndividual = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
+		totalEstimatedIndividual = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
 		totalEstimatedGroup = totalEstimatedIndividual * participantsCount;
 	}
 
@@ -815,6 +815,10 @@
 									: '—'}
 							</li>
 						</ul>
+						<div class="mt-3 rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
+							<p>{$t('ui.fields.totalEstimatedIndividual')}: {formatPrice(totalEstimatedIndividual)}</p>
+							<p class="mt-1">{$t('ui.fields.totalCollectiveEstimated')}: {formatPrice(totalEstimatedGroup)}</p>
+						</div>
 					</div>
 				</div>
 

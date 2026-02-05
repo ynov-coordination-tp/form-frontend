@@ -6,10 +6,10 @@ const en = {
 	// Stepper labels
 	'ui.step.tour': 'Tour',
 	'ui.step.formula': 'Formula',
-	'ui.step.dates': 'Dates',
-	'ui.step.participants': 'Participants',
-	'ui.step.options': 'Options',
-	'ui.step.submit': 'Submit',
+	'ui.step.dates': '3) Dates',
+	'ui.step.participants': '4) Participants',
+	'ui.step.options': '5) Options',
+	'ui.step.submit': '6) Submit',
 
 	// Global actions
 	'ui.actions.next': 'Next',

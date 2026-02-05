@@ -5,10 +5,10 @@ const fr = {
 	// Libellés du stepper
 	'ui.step.tour': 'Circuit',
 	'ui.step.formula': 'Formule',
-	'ui.step.dates': 'Dates',
-	'ui.step.participants': 'Participants',
-	'ui.step.options': 'Options',
-	'ui.step.submit': 'Envoi',
+	'ui.step.dates': '3) Dates',
+	'ui.step.participants': '4) Participants',
+	'ui.step.options': '5) Options',
+	'ui.step.submit': '6) Envoi',
 
 	// Actions globales
 	'ui.actions.next': 'Suivant',
