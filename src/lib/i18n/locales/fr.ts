@@ -4,15 +4,17 @@
 const fr = {
 	// Libellés du stepper
 	'ui.step.tour': 'Circuit',
-	'ui.step.participants': 'Participants',
 	'ui.step.formula': 'Formule',
-	'ui.step.form': 'Formulaire',
+	'ui.step.dates': 'Dates',
+	'ui.step.participants': 'Participants',
+	'ui.step.options': 'Options',
 	'ui.step.submit': 'Envoi',
 
 	// Actions globales
 	'ui.actions.next': 'Suivant',
 	'ui.actions.back': 'Retour',
 	'ui.actions.submit': 'Envoyer la demande',
+	'ui.actions.submitSending': 'Envoi ...',
 
 	// Messages
 	'ui.messages.submitBlocked':
@@ -22,6 +24,7 @@ const fr = {
 	'ui.messages.offlineSummaryLogged': 'Un récapitulatif a été loggué dans la console (mode offline).',
 	'ui.messages.noOptionsSelected': 'Aucune option sélectionnée.',
 	'ui.messages.noOptions': 'Aucune option.',
+	'ui.messages.submitError': 'Une erreur est survenue. Merci de réessayer.',
 
 	// Erreurs
 	'ui.errors.required': '{field} est requis.',
@@ -33,6 +36,7 @@ const fr = {
 	'ui.errors.participantsMax': 'Maximum disponible: {count} participants.',
 	'ui.errors.dateDepartRequired': 'La date de départ est requise.',
 	'ui.errors.dateReturnMissing': 'La date de retour est manquante.',
+	'ui.errors.selectMoto': 'Merci de sélectionner une moto.',
 
 	// Page d'accueil
 	'ui.home.heading': 'Formulaire de devis',
@@ -57,6 +61,7 @@ const fr = {
 	'ui.fields.circuitPlaceholder': 'Choisir un circuit',
 	'ui.fields.durationLabel': 'Durée',
 	'ui.fields.distanceLabel': 'Distance',
+	'ui.fields.countryLabel': 'Pays',
 
 	'ui.sections.formulaTitle': '2) Formule',
 	'ui.sections.formulaDescription': 'Veuillez choisir parmi les formules disponibles.',
@@ -64,11 +69,17 @@ const fr = {
 		"Sélectionnez d'abord un circuit pour voir les formules disponibles.",
 	'ui.fields.basePriceLabel': 'Base',
 	'ui.fields.remainingSeatsLabel': 'Places restantes',
+	'ui.fields.includesMotoLabel': 'Moto incluse',
+	'ui.fields.includesAccommodationLabel': 'Hébergement inclus',
+	'ui.fields.includesMealsLabel': 'Repas inclus',
+	'ui.fields.yes': 'Oui',
+	'ui.fields.no': 'Non',
 
 	'ui.sections.participantsTitle': '3) Participants',
 	'ui.sections.participantsDescription':
 		'Indiquez le nombre total de participants. Le maximum dépend des places restantes sur la formule.',
 	'ui.fields.participantsCountLabel': 'Nombre de participants',
+	'ui.sections.datesDescription': 'Sélectionnez la date de départ. La date de retour est calculée automatiquement.',
 
 	'ui.sections.infoOptionsTitle': '4) Informations & options',
 	'ui.sections.contactTitle': 'Contact principal',
@@ -82,8 +93,21 @@ const fr = {
 	'ui.fields.returnDateComputedLabel': 'Date de retour (calculée)',
 
 	'ui.sections.optionsTitle': 'Options',
+	'ui.sections.optionsDescription': 'Choisissez les bonus et services additionnels.',
 	'ui.sections.optionsNeedFormula':
 		'Sélectionnez une formule pour afficher les options disponibles.',
+	'ui.sections.motoTitle': 'Moto',
+	'ui.sections.accommodationTitle': 'Hébergement',
+	'ui.sections.bonusTitle': 'Bonus & options',
+
+	'ui.fields.motoRentLabel': 'Je loue une moto',
+	'ui.fields.motoOwnLabel': 'Je viens avec ma moto',
+	'ui.fields.motoPlaceholder': 'Sélectionner une moto',
+	'ui.fields.accommodationPlaceholder': 'Sélectionner un hébergement',
+	'ui.fields.optionIncludedLabel': 'Inclus',
+	'ui.fields.motoSelectionLabel': 'Moto',
+	'ui.fields.accommodationLabel': 'Hébergement',
+	'ui.fields.optionsTotalLabel': 'Total options',
 
 	'ui.sections.summaryTitle': 'Récapitulatif',
 	'ui.fields.formulaLabel': 'Formule',
@@ -96,6 +120,7 @@ const fr = {
 	'ui.sections.submitTitle': '5) Envoi',
 	'ui.sections.submitDescription': 'Vérifiez le récapitulatif puis envoyez votre demande.',
 	'ui.sections.quoteSummaryTitle': 'Votre devis',
+	'ui.sections.submitReminder': 'Les informations sont transmises sans authentification.',
 	'ui.fields.participantsLabel': 'Participants',
 	'ui.fields.departureLabel': 'Départ',
 	'ui.fields.returnLabel': 'Retour',
