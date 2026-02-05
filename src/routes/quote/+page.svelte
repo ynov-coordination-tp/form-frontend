@@ -545,7 +545,7 @@
 			{/if}
 
 			{#if stepIndex === 2}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.datesTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">3) {$t('ui.step.dates')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.datesDescription')}</p>
 				<div class="grid gap-3 md:grid-cols-2">
 					<label class="flex flex-col gap-1 text-sm">
@@ -575,7 +575,7 @@
 			{/if}
 
 			{#if stepIndex === 3}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.participantsTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">4) {$t('ui.step.participants')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.participantsDescription')}</p>
 				<label class="flex items-center gap-4 text-sm font-medium" for="participants-count">
 					<span>{$t('ui.fields.participantsCountLabel')}</span>
@@ -594,7 +594,7 @@
 			{/if}
 
 			{#if stepIndex === 4}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.optionsTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">5) {$t('ui.step.options')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.optionsDescription')}</p>
 				{#if !selectedTourFormula}
 					<p class="text-sm text-[var(--c-text2)]">{$t('ui.sections.optionsNeedFormula')}</p>
@@ -750,7 +750,7 @@
 			{/if}
 
 			{#if stepIndex === 5}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.submitTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">6) {$t('ui.step.submit')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.submitDescription')}</p>
 
 				{#if submissionStatus === 'success'}
