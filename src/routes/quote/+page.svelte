@@ -4,7 +4,17 @@
 	import LoaderDots from '$lib/components/LoaderDots.svelte';
 	import { t } from '$lib/i18n';
 	import { createApiClient } from '$lib/api/client';
-	import { OptionTargetType, type Accommodation, type MotoLocation, type Option, type Tour, type TourFormula } from '$lib/api/types';
+	import {
+	OptionTargetType,
+	type Accommodation,
+	type AccommodationPrice,
+	type MotoCategoryPrice,
+	type MotoLocation,
+	type Option,
+	type Tour,
+	type TourFormula,
+	type TourPrice
+} from '$lib/api/types';
 
 	const { client: apiClient, mode: apiMode } = createApiClient(fetch);
 	const isOffline = apiMode === 'mock';
@@ -15,15 +25,24 @@
 	let motoLocations: MotoLocation[] = [];
 	let accommodations: Accommodation[] = [];
 	let options: Option[] = [];
+	let tourPrices: TourPrice[] = [];
+	let motoCategoryPrices: MotoCategoryPrice[] = [];
+	let accommodationPrices: AccommodationPrice[] = [];
 
 	let loadingTours = false;
 	let loadingFormulas = false;
 	let loadingMotos = false;
 	let loadingAccommodations = false;
 	let loadingOptions = false;
+	let loadingTourPrices = false;
+	let loadingMotoCategoryPrices = false;
+	let loadingAccommodationPrices = false;
 	let motosLoaded = false;
 	let accommodationsLoaded = false;
 	let optionsLoaded = false;
+	let tourPricesLoaded = false;
+	let motoCategoryPricesLoaded = false;
+	let accommodationPricesLoaded = false;
 
 	let selectedTourId: number | null = null;
 	let selectedTourFormulaId: number | null = null;
@@ -56,7 +75,11 @@
 	};
 	let stepStatuses: ('incomplete' | 'error' | 'valid')[] = [];
 	let canSubmit = false;
-	let totalEstimated = 0;
+	let totalEstimatedIndividual = 0;
+	let totalEstimatedGroup = 0;
+	let selectedTourBasePrice: number | null = null;
+	let selectedMotoDailyPrice: number | null = null;
+	let selectedAccommodationNightlyPrice: number | null = null;
 
 	const formatPrice = (value: number) => `${value.toLocaleString('fr-FR')} €`;
 
@@ -78,6 +101,31 @@
 		if (!value) return null;
 		const parsed = Number(value);
 		return Number.isNaN(parsed) ? null : parsed;
+	};
+
+	const isPriceActiveForDate = (startDate: string, endDate: string, selectedDate?: string) => {
+		if (!selectedDate) return true;
+		return selectedDate >= startDate && selectedDate <= endDate;
+	};
+
+	const pickCurrentTourPrice = (prices: TourPrice[], selectedDate?: string) => {
+		return prices.find((price) => isPriceActiveForDate(price.startDate, price.endDate, selectedDate));
+	};
+
+	const pickCurrentMotoPrice = (prices: MotoCategoryPrice[], categoryId: number, selectedDate?: string) => {
+		return prices.find(
+			(price) =>
+				price.motoCategory.id === categoryId &&
+				isPriceActiveForDate(price.startDate, price.endDate, selectedDate)
+		);
+	};
+
+	const pickCurrentAccommodationPrice = (prices: AccommodationPrice[], accommodationId: number, selectedDate?: string) => {
+		return prices.find(
+			(price) =>
+				price.accommodationId === accommodationId &&
+				isPriceActiveForDate(price.startDate, price.endDate, selectedDate)
+		);
 	};
 
 	onMount(() => {
@@ -132,6 +180,44 @@
 		}
 	};
 
+	const loadTourPrices = async (tourFormulaIds: number[]) => {
+		if (tourFormulaIds.length === 0) {
+				tourPricesLoaded = true;
+			return;
+		}
+
+		loadingTourPrices = true;
+		try {
+			const pricesByFormula = await Promise.all(
+				tourFormulaIds.map((tourFormulaId) => apiClient.getTourPricesByFormula(tourFormulaId))
+			);
+			tourPrices = pricesByFormula.flat();
+			tourPricesLoaded = true;
+		} finally {
+			loadingTourPrices = false;
+		}
+	};
+
+	const loadMotoCategoryPrices = async () => {
+		loadingMotoCategoryPrices = true;
+		try {
+			motoCategoryPrices = await apiClient.getMotoCategoryPrices();
+			motoCategoryPricesLoaded = true;
+		} finally {
+			loadingMotoCategoryPrices = false;
+		}
+	};
+
+	const loadAccommodationPrices = async () => {
+		loadingAccommodationPrices = true;
+		try {
+			accommodationPrices = await apiClient.getAccommodationPrices();
+			accommodationPricesLoaded = true;
+		} finally {
+			loadingAccommodationPrices = false;
+		}
+	};
+
 	const resetSelectionsAfterTour = () => {
 		selectedTourFormulaId = null;
 		tourFormulas = [];
@@ -144,6 +230,8 @@
 		motosLoaded = false;
 		accommodationsLoaded = false;
 		optionsLoaded = false;
+		tourPricesLoaded = false;
+		tourPrices = [];
 		submissionStatus = 'idle';
 		submissionMessage = '';
 	};
@@ -154,6 +242,8 @@
 
 		if (selectedTourId) {
 			await loadTourFormulas(selectedTourId);
+			const formulaIds = tourFormulas.map((formula) => formula.id);
+			await loadTourPrices(formulaIds);
 		}
 	};
 
@@ -253,6 +343,19 @@
 		void loadAccommodations();
 	}
 
+
+	$: if (selectedTourFormula?.formula.includesMoto && !motoCategoryPricesLoaded && !loadingMotoCategoryPrices) {
+		void loadMotoCategoryPrices();
+	}
+
+	$: if (
+		selectedTourFormula?.formula.includesAccommodation &&
+		!accommodationPricesLoaded &&
+		!loadingAccommodationPrices
+	) {
+		void loadAccommodationPrices();
+	}
+
 	$: quoteItemOptions = options.filter((option) => option.targetType !== OptionTargetType.Quote);
 	$: selectedOptions = quoteItemOptions.filter((option) => selectedOptionIds.includes(option.id));
 
@@ -288,9 +391,25 @@
 		!errors.moto &&
 		submissionStatus !== 'sending';
 
+	$: selectedTourBasePrice = pickCurrentTourPrice(tourPrices, departureDate)?.basePrice ?? null;
+	$: selectedMotoDailyPrice = (() => {
+		if (motoChoice === 'own' || !selectedMotoLocationId) return null;
+		const selectedMoto = motoLocations.find((moto) => moto.id === selectedMotoLocationId);
+		if (!selectedMoto) return null;
+		return pickCurrentMotoPrice(motoCategoryPrices, selectedMoto.motoCategory.id, departureDate)?.dailyPrice ?? null;
+	})();
+	$: selectedAccommodationNightlyPrice = (() => {
+		if (!selectedAccommodationId) return null;
+		return pickCurrentAccommodationPrice(accommodationPrices, selectedAccommodationId, departureDate)?.nightlyPrice ?? null;
+	})();
+
 	$: {
+		const durationDays = selectedTour?.durationDays ?? 0;
 		const totalOptionsPrice = selectedOptions.reduce((sum, option) => sum + (option.price ?? 0), 0);
-		totalEstimated = totalOptionsPrice;
+		const motoTotal = (selectedMotoDailyPrice ?? 0) * durationDays;
+		const accommodationTotal = (selectedAccommodationNightlyPrice ?? 0) * durationDays;
+		totalEstimatedIndividual = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
+		totalEstimatedGroup = totalEstimatedIndividual * participantsCount;
 	}
 
 	let steps: { label: string; index: number }[] = [];
@@ -398,9 +517,14 @@
 								on:click={() => handleFormulaSelect(formule.id)}
 							>
 								<div class="flex items-center justify-between">
-									<h3 class="font-cinzel text-lg font-semibold">{formule.formula.name}</h3>
+									<h3 class="font-cinzel text-lg font-semibold text-[var(--light)]">{formule.formula.name}</h3>
+									{#if pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice}
+										<span class="text-sm font-semibold text-[var(--light)]">
+											{formatPrice(pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice ?? 0)}
+										</span>
+									{/if}
 								</div>
-								<ul class="text-xs text-[var(--c-text2)]">
+								<ul class="text-xs text-[var(--light)]/90">
 									<li>
 										{$t('ui.fields.includesMotoLabel')}: {formule.formula.includesMoto ? $t('ui.fields.yes') : $t('ui.fields.no')}
 									</li>
@@ -421,14 +545,14 @@
 			{/if}
 
 			{#if stepIndex === 2}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.datesTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">3) {$t('ui.step.dates')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.datesDescription')}</p>
-				<div class="grid gap-3 md:grid-cols-2">
+				<div class="flex flex-col sm:flex-row gap-5">
 					<label class="flex flex-col gap-1 text-sm">
 						{$t('ui.fields.departureDateLabel')}
 						<input
 							type="date"
-							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+							class="w-[8rem] rounded-lg border border-[var(--c-border)] px-3 py-2"
 							disabled={!selectedTour}
 							value={departureDate}
 							on:input={(event) => (departureDate = event.currentTarget.value)}
@@ -441,7 +565,7 @@
 						{$t('ui.fields.returnDateComputedLabel')}
 						<input
 							type="date"
-							class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+							class="w-[8rem] rounded-lg border border-[var(--c-border)] px-3 py-2"
 							readonly
 							disabled
 							value={returnDate}
@@ -451,7 +575,7 @@
 			{/if}
 
 			{#if stepIndex === 3}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.participantsTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">4) {$t('ui.step.participants')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.participantsDescription')}</p>
 				<label class="flex items-center gap-4 text-sm font-medium" for="participants-count">
 					<span>{$t('ui.fields.participantsCountLabel')}</span>
@@ -459,7 +583,7 @@
 						id="participants-count"
 						type="number"
 						min="1"
-						class="rounded-lg border border-[var(--c-border)] px-3 py-2"
+						class="rounded-lg border border-[var(--c-border)] w-[4rem] px-3 py-2"
 						value={participantsCount}
 						on:input={(event) => (participantsCount = Number(event.currentTarget.value))}
 					/>
@@ -470,7 +594,7 @@
 			{/if}
 
 			{#if stepIndex === 4}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.optionsTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">5) {$t('ui.step.options')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.optionsDescription')}</p>
 				{#if !selectedTourFormula}
 					<p class="text-sm text-[var(--c-text2)]">{$t('ui.sections.optionsNeedFormula')}</p>
@@ -515,6 +639,9 @@
 											{#each motoLocations as moto}
 												<option value={moto.id}>
 													{moto.motoCategory.name} • {moto.brand} {moto.model} ({moto.count})
+												{#if pickCurrentMotoPrice(motoCategoryPrices, moto.motoCategory.id, departureDate)?.dailyPrice}
+													 • {formatPrice(pickCurrentMotoPrice(motoCategoryPrices, moto.motoCategory.id, departureDate)?.dailyPrice ?? 0)}/jour
+												{/if}
 												</option>
 											{/each}
 										</select>
@@ -540,12 +667,15 @@
 										}
 									>
 										<option value="">{$t('ui.fields.accommodationPlaceholder')}</option>
-										{#each accommodations as accommodation}
-											<option value={accommodation.id}>
-												{accommodation.name}
-												{accommodation.city ? ` • ${accommodation.city}` : ''}
-											</option>
-										{/each}
+											{#each accommodations as accommodation}
+												<option value={accommodation.id}>
+													{accommodation.name}
+													{accommodation.city ? ` • ${accommodation.city}` : ''}
+													{#if pickCurrentAccommodationPrice(accommodationPrices, accommodation.id, departureDate)?.nightlyPrice}
+														 • {formatPrice(pickCurrentAccommodationPrice(accommodationPrices, accommodation.id, departureDate)?.nightlyPrice ?? 0)}/nuit
+													{/if}
+												</option>
+											{/each}
 									</select>
 								{/if}
 							</div>
@@ -590,6 +720,11 @@
 							<p class="mt-1">{$t('ui.fields.returnLabel')}: {returnDate || '—'}</p>
 							<p class="mt-1">{$t('ui.fields.participantsLabel')}: {participantsCount}</p>
 						</div>
+						<div class="text-sm">
+							<p class="flex">{$t('ui.fields.formulaPriceLabel')}: <span class="ml-auto">{selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</span></p>
+							<p class="mt-1 flex">Moto: <span class="ml-auto">{selectedMotoDailyPrice !== null ? `${formatPrice(selectedMotoDailyPrice)} / jour` : '—'}</span></p>
+							<p class="mt-1 flex">Hébergement: <span class="ml-auto">{selectedAccommodationNightlyPrice !== null ? `${formatPrice(selectedAccommodationNightlyPrice)} / nuit` : '—'}</span></p>
+						</div>
 						<div>
 							<h4 class="text-sm font-semibold">{$t('ui.sections.selectedOptionsTitle')}</h4>
 							{#if selectedOptions.length === 0}
@@ -606,7 +741,8 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							{$t('ui.fields.optionsTotalLabel')}: <span class="ml-auto">{formatPrice(totalEstimated)}</span>
+							<p class="flex">{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
+							<p class="mt-2 flex">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
 						</div>
 					</aside>
 					</div>
@@ -614,7 +750,7 @@
 			{/if}
 
 			{#if stepIndex === 5}
-				<h2 class="mb-4 text-xl font-semibold">{$t('ui.sections.submitTitle')}</h2>
+				<h2 class="mb-4 text-xl font-semibold">6) {$t('ui.step.submit')}</h2>
 				<p class="mb-4 text-sm text-[var(--c-text2)]">{$t('ui.sections.submitDescription')}</p>
 
 				{#if submissionStatus === 'success'}
@@ -679,6 +815,10 @@
 									: '—'}
 							</li>
 						</ul>
+						<div class="mt-3 rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
+							<p class="flex">{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
+							<p class="mt-1 flex">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
+						</div>
 					</div>
 				</div>
 

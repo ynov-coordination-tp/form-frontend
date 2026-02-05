@@ -112,6 +112,7 @@ const fr = {
 	'ui.sections.summaryTitle': 'Récapitulatif',
 	'ui.fields.formulaLabel': 'Formule',
 	'ui.fields.baseLabel': 'Base',
+	'ui.fields.formulaPriceLabel': 'Prix formule',
 	'ui.sections.selectedOptionsTitle': 'Options sélectionnées',
 	'ui.fields.totalEstimatedSingle': 'Total estimé',
 	'ui.fields.totalEstimatedIndividual': 'Total individuel estimé',

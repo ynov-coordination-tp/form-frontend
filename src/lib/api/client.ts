@@ -2,14 +2,26 @@ import { env } from '$env/dynamic/public';
 import {
 	QuoteStatus,
 	type Accommodation,
+	type AccommodationPrice,
+	type MotoCategoryPrice,
 	type MotoLocation,
 	type Option,
 	type Quote,
 	type QuoteCreateDto,
 	type Tour,
-	type TourFormula
+	type TourFormula,
+	type TourPrice
 } from '$lib/api/types';
-import { accommodations, motoLocations, options, tourFormulas, tours } from '$lib/api/mockData';
+import {
+	accommodationPrices,
+	accommodations,
+	motoCategoryPrices,
+	motoLocations,
+	options,
+	tourFormulas,
+	tourPrices,
+	tours
+} from '$lib/api/mockData';
 
 export type ApiMode = 'api' | 'mock';
 
@@ -18,6 +30,10 @@ export interface ApiClient {
 	getTourFormulasByTour(tourId: number): Promise<TourFormula[]>;
 	getMotoLocations(): Promise<MotoLocation[]>;
 	getAccommodations(): Promise<Accommodation[]>;
+	getTourPrices(): Promise<TourPrice[]>;
+	getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]>;
+	getMotoCategoryPrices(): Promise<MotoCategoryPrice[]>;
+	getAccommodationPrices(): Promise<AccommodationPrice[]>;
 	getOptions(): Promise<Option[]>;
 	createQuote(payload: QuoteCreateDto): Promise<Quote>;
 }
@@ -61,6 +77,26 @@ class MockApiClient implements ApiClient {
 	async getAccommodations(): Promise<Accommodation[]> {
 		await delay(300);
 		return accommodations;
+	}
+
+	async getTourPrices(): Promise<TourPrice[]> {
+		await delay(300);
+		return tourPrices;
+	}
+
+	async getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]> {
+		await delay(300);
+		return tourPrices.filter((price) => price.tourFormula.id === tourFormulaId);
+	}
+
+	async getMotoCategoryPrices(): Promise<MotoCategoryPrice[]> {
+		await delay(300);
+		return motoCategoryPrices;
+	}
+
+	async getAccommodationPrices(): Promise<AccommodationPrice[]> {
+		await delay(300);
+		return accommodationPrices;
 	}
 
 	async getOptions(): Promise<Option[]> {
@@ -120,6 +156,22 @@ class HttpApiClient implements ApiClient {
 
 	getAccommodations(): Promise<Accommodation[]> {
 		return this.request<Accommodation[]>('/accommodations');
+	}
+
+	getTourPrices(): Promise<TourPrice[]> {
+		return this.request<TourPrice[]>('/tour-prices');
+	}
+
+	getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]> {
+		return this.request<TourPrice[]>(`/tour-prices/formula/${tourFormulaId}`);
+	}
+
+	getMotoCategoryPrices(): Promise<MotoCategoryPrice[]> {
+		return this.request<MotoCategoryPrice[]>('/moto-category-prices');
+	}
+
+	getAccommodationPrices(): Promise<AccommodationPrice[]> {
+		return this.request<AccommodationPrice[]>('/accommodation-prices');
 	}
 
 	getOptions(): Promise<Option[]> {

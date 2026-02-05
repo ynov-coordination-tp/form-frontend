@@ -33,6 +33,14 @@ export interface TourFormula {
 	isActive?: boolean;
 }
 
+export interface TourPrice {
+	id: number;
+	tourFormula: TourFormula;
+	startDate: string;
+	endDate: string;
+	basePrice: number;
+}
+
 export enum AccommodationType {
 	Hotel = 'HOTEL',
 	Airbnb = 'AIRBNB',
@@ -47,9 +55,34 @@ export interface Accommodation {
 	type?: AccommodationType;
 }
 
+export enum RoomType {
+	Single = 'SINGLE',
+	Couple = 'COUPLE',
+	Shared = 'SHARED'
+}
+
+export interface AccommodationPrice {
+	id: number;
+	accommodationId: number;
+	startDate: string;
+	endDate: string;
+	nightlyPrice: number;
+	roomType: RoomType;
+}
+
 export interface MotoCategory {
 	id: number;
 	name: string;
+}
+
+export interface MotoCategoryPrice {
+	id: number;
+	motoCategory: MotoCategory;
+	country: string;
+	startDate: string;
+	endDate: string;
+	dailyPrice: number;
+	kmPrice?: number;
 }
 
 export interface MotoLocation {

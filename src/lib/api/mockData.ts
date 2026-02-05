@@ -2,10 +2,14 @@ import {
 	AccommodationType,
 	OptionTargetType,
 	type Accommodation,
+	type MotoCategoryPrice,
 	type MotoLocation,
 	type Option,
 	type Tour,
-	type TourFormula
+	type TourFormula,
+	type TourPrice,
+	type AccommodationPrice,
+	RoomType
 } from '$lib/api/types';
 
 export const tours: Tour[] = [
@@ -121,6 +125,95 @@ export const accommodations: Accommodation[] = [
 		city: 'Santorini',
 		country: 'Grèce',
 		type: AccommodationType.Airbnb
+	}
+];
+
+
+export const tourPrices: TourPrice[] = [
+	{
+		id: 1001,
+		tourFormula: tourFormulas[0],
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		basePrice: 1650
+	},
+	{
+		id: 1002,
+		tourFormula: tourFormulas[1],
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		basePrice: 2290
+	},
+	{
+		id: 1003,
+		tourFormula: tourFormulas[2],
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		basePrice: 1890
+	},
+	{
+		id: 1004,
+		tourFormula: tourFormulas[3],
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		basePrice: 2750
+	}
+];
+
+export const accommodationPrices: AccommodationPrice[] = [
+	{
+		id: 2001,
+		accommodationId: 11,
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		nightlyPrice: 110,
+		roomType: RoomType.Single
+	},
+	{
+		id: 2002,
+		accommodationId: 12,
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		nightlyPrice: 135,
+		roomType: RoomType.Single
+	},
+	{
+		id: 2003,
+		accommodationId: 13,
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		nightlyPrice: 160,
+		roomType: RoomType.Single
+	}
+];
+
+export const motoCategoryPrices: MotoCategoryPrice[] = [
+	{
+		id: 3001,
+		motoCategory: { id: 1, name: 'Trail' },
+		country: 'Grèce',
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		dailyPrice: 85,
+		kmPrice: 0.15
+	},
+	{
+		id: 3002,
+		motoCategory: { id: 2, name: 'Roadster' },
+		country: 'Grèce',
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		dailyPrice: 70,
+		kmPrice: 0.12
+	},
+	{
+		id: 3003,
+		motoCategory: { id: 3, name: 'Touring' },
+		country: 'Grèce',
+		startDate: '2026-01-01',
+		endDate: '2026-12-31',
+		dailyPrice: 95,
+		kmPrice: 0.18
 	}
 ];
 
