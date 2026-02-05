@@ -4,7 +4,17 @@
 	import LoaderDots from '$lib/components/LoaderDots.svelte';
 	import { t } from '$lib/i18n';
 	import { createApiClient } from '$lib/api/client';
-	import { OptionTargetType, type Accommodation, type MotoLocation, type Option, type Tour, type TourFormula } from '$lib/api/types';
+	import {
+	OptionTargetType,
+	type Accommodation,
+	type AccommodationPrice,
+	type MotoCategoryPrice,
+	type MotoLocation,
+	type Option,
+	type Tour,
+	type TourFormula,
+	type TourPrice
+} from '$lib/api/types';
 
 	const { client: apiClient, mode: apiMode } = createApiClient(fetch);
 	const isOffline = apiMode === 'mock';
@@ -15,15 +25,24 @@
 	let motoLocations: MotoLocation[] = [];
 	let accommodations: Accommodation[] = [];
 	let options: Option[] = [];
+	let tourPrices: TourPrice[] = [];
+	let motoCategoryPrices: MotoCategoryPrice[] = [];
+	let accommodationPrices: AccommodationPrice[] = [];
 
 	let loadingTours = false;
 	let loadingFormulas = false;
 	let loadingMotos = false;
 	let loadingAccommodations = false;
 	let loadingOptions = false;
+	let loadingTourPrices = false;
+	let loadingMotoCategoryPrices = false;
+	let loadingAccommodationPrices = false;
 	let motosLoaded = false;
 	let accommodationsLoaded = false;
 	let optionsLoaded = false;
+	let tourPricesLoaded = false;
+	let motoCategoryPricesLoaded = false;
+	let accommodationPricesLoaded = false;
 
 	let selectedTourId: number | null = null;
 	let selectedTourFormulaId: number | null = null;
@@ -57,6 +76,9 @@
 	let stepStatuses: ('incomplete' | 'error' | 'valid')[] = [];
 	let canSubmit = false;
 	let totalEstimated = 0;
+	let selectedTourBasePrice: number | null = null;
+	let selectedMotoDailyPrice: number | null = null;
+	let selectedAccommodationNightlyPrice: number | null = null;
 
 	const formatPrice = (value: number) => `${value.toLocaleString('fr-FR')} €`;
 
@@ -78,6 +100,31 @@
 		if (!value) return null;
 		const parsed = Number(value);
 		return Number.isNaN(parsed) ? null : parsed;
+	};
+
+	const isPriceActiveForDate = (startDate: string, endDate: string, selectedDate?: string) => {
+		if (!selectedDate) return true;
+		return selectedDate >= startDate && selectedDate <= endDate;
+	};
+
+	const pickCurrentTourPrice = (prices: TourPrice[], selectedDate?: string) => {
+		return prices.find((price) => isPriceActiveForDate(price.startDate, price.endDate, selectedDate));
+	};
+
+	const pickCurrentMotoPrice = (prices: MotoCategoryPrice[], categoryId: number, selectedDate?: string) => {
+		return prices.find(
+			(price) =>
+				price.motoCategory.id === categoryId &&
+				isPriceActiveForDate(price.startDate, price.endDate, selectedDate)
+		);
+	};
+
+	const pickCurrentAccommodationPrice = (prices: AccommodationPrice[], accommodationId: number, selectedDate?: string) => {
+		return prices.find(
+			(price) =>
+				price.accommodationId === accommodationId &&
+				isPriceActiveForDate(price.startDate, price.endDate, selectedDate)
+		);
 	};
 
 	onMount(() => {
@@ -132,6 +179,36 @@
 		}
 	};
 
+	const loadTourPrices = async (tourFormulaId: number) => {
+		loadingTourPrices = true;
+		try {
+			tourPrices = await apiClient.getTourPricesByFormula(tourFormulaId);
+			tourPricesLoaded = true;
+		} finally {
+			loadingTourPrices = false;
+		}
+	};
+
+	const loadMotoCategoryPrices = async () => {
+		loadingMotoCategoryPrices = true;
+		try {
+			motoCategoryPrices = await apiClient.getMotoCategoryPrices();
+			motoCategoryPricesLoaded = true;
+		} finally {
+			loadingMotoCategoryPrices = false;
+		}
+	};
+
+	const loadAccommodationPrices = async () => {
+		loadingAccommodationPrices = true;
+		try {
+			accommodationPrices = await apiClient.getAccommodationPrices();
+			accommodationPricesLoaded = true;
+		} finally {
+			loadingAccommodationPrices = false;
+		}
+	};
+
 	const resetSelectionsAfterTour = () => {
 		selectedTourFormulaId = null;
 		tourFormulas = [];
@@ -144,7 +221,9 @@
 		motosLoaded = false;
 		accommodationsLoaded = false;
 		optionsLoaded = false;
+		tourPricesLoaded = false;
 		submissionStatus = 'idle';
+		tourPrices = [];
 		submissionMessage = '';
 	};
 
@@ -163,8 +242,13 @@
 		selectedMotoLocationId = null;
 		selectedAccommodationId = null;
 		submissionStatus = 'idle';
+		tourPrices = [];
 		submissionMessage = '';
 		const formula = tourFormulas.find((item) => item.id === id);
+		if (id) {
+			void loadTourPrices(id);
+		}
+
 		if (formula?.formula.includesMoto) {
 			motoChoice = 'rent';
 		} else {
@@ -253,6 +337,22 @@
 		void loadAccommodations();
 	}
 
+	$: if (selectedTourFormula && !tourPricesLoaded && !loadingTourPrices) {
+		void loadTourPrices(selectedTourFormula.id);
+	}
+
+	$: if (selectedTourFormula?.formula.includesMoto && !motoCategoryPricesLoaded && !loadingMotoCategoryPrices) {
+		void loadMotoCategoryPrices();
+	}
+
+	$: if (
+		selectedTourFormula?.formula.includesAccommodation &&
+		!accommodationPricesLoaded &&
+		!loadingAccommodationPrices
+	) {
+		void loadAccommodationPrices();
+	}
+
 	$: quoteItemOptions = options.filter((option) => option.targetType !== OptionTargetType.Quote);
 	$: selectedOptions = quoteItemOptions.filter((option) => selectedOptionIds.includes(option.id));
 
@@ -288,9 +388,24 @@
 		!errors.moto &&
 		submissionStatus !== 'sending';
 
+	$: selectedTourBasePrice = pickCurrentTourPrice(tourPrices, departureDate)?.basePrice ?? null;
+	$: selectedMotoDailyPrice = (() => {
+		if (motoChoice === 'own' || !selectedMotoLocationId) return null;
+		const selectedMoto = motoLocations.find((moto) => moto.id === selectedMotoLocationId);
+		if (!selectedMoto) return null;
+		return pickCurrentMotoPrice(motoCategoryPrices, selectedMoto.motoCategory.id, departureDate)?.dailyPrice ?? null;
+	})();
+	$: selectedAccommodationNightlyPrice = (() => {
+		if (!selectedAccommodationId) return null;
+		return pickCurrentAccommodationPrice(accommodationPrices, selectedAccommodationId, departureDate)?.nightlyPrice ?? null;
+	})();
+
 	$: {
+		const durationDays = selectedTour?.durationDays ?? 0;
 		const totalOptionsPrice = selectedOptions.reduce((sum, option) => sum + (option.price ?? 0), 0);
-		totalEstimated = totalOptionsPrice;
+		const motoTotal = (selectedMotoDailyPrice ?? 0) * durationDays;
+		const accommodationTotal = (selectedAccommodationNightlyPrice ?? 0) * durationDays;
+		totalEstimated = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
 	}
 
 	let steps: { label: string; index: number }[] = [];
@@ -399,6 +514,11 @@
 							>
 								<div class="flex items-center justify-between">
 									<h3 class="font-cinzel text-lg font-semibold">{formule.formula.name}</h3>
+									{#if pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice}
+										<span class="text-sm font-semibold text-[var(--c-accent)]">
+											{formatPrice(pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice ?? 0)}
+										</span>
+									{/if}
 								</div>
 								<ul class="text-xs text-[var(--c-text2)]">
 									<li>
@@ -515,6 +635,9 @@
 											{#each motoLocations as moto}
 												<option value={moto.id}>
 													{moto.motoCategory.name} • {moto.brand} {moto.model} ({moto.count})
+												{#if pickCurrentMotoPrice(motoCategoryPrices, moto.motoCategory.id, departureDate)?.dailyPrice}
+													 • {formatPrice(pickCurrentMotoPrice(motoCategoryPrices, moto.motoCategory.id, departureDate)?.dailyPrice ?? 0)}/jour
+												{/if}
 												</option>
 											{/each}
 										</select>
@@ -540,12 +663,15 @@
 										}
 									>
 										<option value="">{$t('ui.fields.accommodationPlaceholder')}</option>
-										{#each accommodations as accommodation}
-											<option value={accommodation.id}>
-												{accommodation.name}
-												{accommodation.city ? ` • ${accommodation.city}` : ''}
-											</option>
-										{/each}
+											{#each accommodations as accommodation}
+												<option value={accommodation.id}>
+													{accommodation.name}
+													{accommodation.city ? ` • ${accommodation.city}` : ''}
+													{#if pickCurrentAccommodationPrice(accommodationPrices, accommodation.id, departureDate)?.nightlyPrice}
+														 • {formatPrice(pickCurrentAccommodationPrice(accommodationPrices, accommodation.id, departureDate)?.nightlyPrice ?? 0)}/nuit
+													{/if}
+												</option>
+											{/each}
 									</select>
 								{/if}
 							</div>
@@ -590,6 +716,11 @@
 							<p class="mt-1">{$t('ui.fields.returnLabel')}: {returnDate || '—'}</p>
 							<p class="mt-1">{$t('ui.fields.participantsLabel')}: {participantsCount}</p>
 						</div>
+						<div class="text-sm">
+							<p>{$t('ui.fields.baseLabel')}: {selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</p>
+							<p class="mt-1">Moto: {selectedMotoDailyPrice !== null ? `${formatPrice(selectedMotoDailyPrice)} / jour` : '—'}</p>
+							<p class="mt-1">Hébergement: {selectedAccommodationNightlyPrice !== null ? `${formatPrice(selectedAccommodationNightlyPrice)} / nuit` : '—'}</p>
+						</div>
 						<div>
 							<h4 class="text-sm font-semibold">{$t('ui.sections.selectedOptionsTitle')}</h4>
 							{#if selectedOptions.length === 0}
@@ -606,7 +737,7 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							{$t('ui.fields.optionsTotalLabel')}: <span class="ml-auto">{formatPrice(totalEstimated)}</span>
+							{$t('ui.fields.totalEstimatedSingle')}: <span class="ml-auto">{formatPrice(totalEstimated)}</span>
 						</div>
 					</aside>
 					</div>
