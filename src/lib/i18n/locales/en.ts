@@ -111,6 +111,7 @@ const en = {
 	'ui.sections.summaryTitle': 'Summary',
 	'ui.fields.formulaLabel': 'Formula',
 	'ui.fields.baseLabel': 'Base',
+	'ui.fields.formulaPriceLabel': 'Formula price',
 	'ui.sections.selectedOptionsTitle': 'Selected options',
 	'ui.fields.totalEstimatedSingle': 'Estimated total',
 	'ui.fields.totalEstimatedIndividual': 'Estimated individual total',

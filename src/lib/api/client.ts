@@ -30,6 +30,7 @@ export interface ApiClient {
 	getTourFormulasByTour(tourId: number): Promise<TourFormula[]>;
 	getMotoLocations(): Promise<MotoLocation[]>;
 	getAccommodations(): Promise<Accommodation[]>;
+	getTourPrices(): Promise<TourPrice[]>;
 	getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]>;
 	getMotoCategoryPrices(): Promise<MotoCategoryPrice[]>;
 	getAccommodationPrices(): Promise<AccommodationPrice[]>;
@@ -76,6 +77,11 @@ class MockApiClient implements ApiClient {
 	async getAccommodations(): Promise<Accommodation[]> {
 		await delay(300);
 		return accommodations;
+	}
+
+	async getTourPrices(): Promise<TourPrice[]> {
+		await delay(300);
+		return tourPrices;
 	}
 
 	async getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]> {
@@ -150,6 +156,10 @@ class HttpApiClient implements ApiClient {
 
 	getAccommodations(): Promise<Accommodation[]> {
 		return this.request<Accommodation[]>('/accommodations');
+	}
+
+	getTourPrices(): Promise<TourPrice[]> {
+		return this.request<TourPrice[]>('/tour-prices');
 	}
 
 	getTourPricesByFormula(tourFormulaId: number): Promise<TourPrice[]> {

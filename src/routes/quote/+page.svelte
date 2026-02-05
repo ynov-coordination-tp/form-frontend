@@ -75,7 +75,8 @@
 	};
 	let stepStatuses: ('incomplete' | 'error' | 'valid')[] = [];
 	let canSubmit = false;
-	let totalEstimated = 0;
+	let totalEstimatedIndividual = 0;
+	let totalEstimatedGroup = 0;
 	let selectedTourBasePrice: number | null = null;
 	let selectedMotoDailyPrice: number | null = null;
 	let selectedAccommodationNightlyPrice: number | null = null;
@@ -179,10 +180,18 @@
 		}
 	};
 
-	const loadTourPrices = async (tourFormulaId: number) => {
+	const loadTourPrices = async (tourFormulaIds: number[]) => {
+		if (tourFormulaIds.length === 0) {
+				tourPricesLoaded = true;
+			return;
+		}
+
 		loadingTourPrices = true;
 		try {
-			tourPrices = await apiClient.getTourPricesByFormula(tourFormulaId);
+			const pricesByFormula = await Promise.all(
+				tourFormulaIds.map((tourFormulaId) => apiClient.getTourPricesByFormula(tourFormulaId))
+			);
+			tourPrices = pricesByFormula.flat();
 			tourPricesLoaded = true;
 		} finally {
 			loadingTourPrices = false;
@@ -222,8 +231,8 @@
 		accommodationsLoaded = false;
 		optionsLoaded = false;
 		tourPricesLoaded = false;
-		submissionStatus = 'idle';
 		tourPrices = [];
+		submissionStatus = 'idle';
 		submissionMessage = '';
 	};
 
@@ -233,6 +242,8 @@
 
 		if (selectedTourId) {
 			await loadTourFormulas(selectedTourId);
+			const formulaIds = tourFormulas.map((formula) => formula.id);
+			await loadTourPrices(formulaIds);
 		}
 	};
 
@@ -242,13 +253,8 @@
 		selectedMotoLocationId = null;
 		selectedAccommodationId = null;
 		submissionStatus = 'idle';
-		tourPrices = [];
 		submissionMessage = '';
 		const formula = tourFormulas.find((item) => item.id === id);
-		if (id) {
-			void loadTourPrices(id);
-		}
-
 		if (formula?.formula.includesMoto) {
 			motoChoice = 'rent';
 		} else {
@@ -337,9 +343,6 @@
 		void loadAccommodations();
 	}
 
-	$: if (selectedTourFormula && !tourPricesLoaded && !loadingTourPrices) {
-		void loadTourPrices(selectedTourFormula.id);
-	}
 
 	$: if (selectedTourFormula?.formula.includesMoto && !motoCategoryPricesLoaded && !loadingMotoCategoryPrices) {
 		void loadMotoCategoryPrices();
@@ -405,7 +408,8 @@
 		const totalOptionsPrice = selectedOptions.reduce((sum, option) => sum + (option.price ?? 0), 0);
 		const motoTotal = (selectedMotoDailyPrice ?? 0) * durationDays;
 		const accommodationTotal = (selectedAccommodationNightlyPrice ?? 0) * durationDays;
-		totalEstimated = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
+			totalEstimatedIndividual = (selectedTourBasePrice ?? 0) + totalOptionsPrice + motoTotal + accommodationTotal;
+		totalEstimatedGroup = totalEstimatedIndividual * participantsCount;
 	}
 
 	let steps: { label: string; index: number }[] = [];
@@ -513,14 +517,14 @@
 								on:click={() => handleFormulaSelect(formule.id)}
 							>
 								<div class="flex items-center justify-between">
-									<h3 class="font-cinzel text-lg font-semibold">{formule.formula.name}</h3>
+									<h3 class="font-cinzel text-lg font-semibold text-[var(--light)]">{formule.formula.name}</h3>
 									{#if pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice}
-										<span class="text-sm font-semibold text-[var(--c-accent)]">
+										<span class="text-sm font-semibold text-[var(--light)]">
 											{formatPrice(pickCurrentTourPrice(tourPrices.filter((price) => price.tourFormula.id === formule.id), departureDate)?.basePrice ?? 0)}
 										</span>
 									{/if}
 								</div>
-								<ul class="text-xs text-[var(--c-text2)]">
+								<ul class="text-xs text-[var(--light)]/90">
 									<li>
 										{$t('ui.fields.includesMotoLabel')}: {formule.formula.includesMoto ? $t('ui.fields.yes') : $t('ui.fields.no')}
 									</li>
@@ -717,7 +721,7 @@
 							<p class="mt-1">{$t('ui.fields.participantsLabel')}: {participantsCount}</p>
 						</div>
 						<div class="text-sm">
-							<p>{$t('ui.fields.baseLabel')}: {selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</p>
+							<p>{$t('ui.fields.formulaPriceLabel')}: {selectedTourBasePrice !== null ? formatPrice(selectedTourBasePrice) : '—'}</p>
 							<p class="mt-1">Moto: {selectedMotoDailyPrice !== null ? `${formatPrice(selectedMotoDailyPrice)} / jour` : '—'}</p>
 							<p class="mt-1">Hébergement: {selectedAccommodationNightlyPrice !== null ? `${formatPrice(selectedAccommodationNightlyPrice)} / nuit` : '—'}</p>
 						</div>
@@ -737,7 +741,8 @@
 							{/if}
 						</div>
 						<div class="rounded-lg bg-[var(--c-bg)] p-3 text-sm font-semibold">
-							{$t('ui.fields.totalEstimatedSingle')}: <span class="ml-auto">{formatPrice(totalEstimated)}</span>
+							<p>{$t('ui.fields.totalEstimatedIndividual')}: <span class="ml-auto">{formatPrice(totalEstimatedIndividual)}</span></p>
+									<p class="mt-2">{$t('ui.fields.totalCollectiveEstimated')}: <span class="ml-auto">{formatPrice(totalEstimatedGroup)}</span></p>
 						</div>
 					</aside>
 					</div>
