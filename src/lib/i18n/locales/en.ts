@@ -5,15 +5,17 @@
 const en = {
 	// Stepper labels
 	'ui.step.tour': 'Tour',
-	'ui.step.participants': 'Participants',
 	'ui.step.formula': 'Formula',
-	'ui.step.form': 'Form',
+	'ui.step.dates': 'Dates',
+	'ui.step.participants': 'Participants',
+	'ui.step.options': 'Options',
 	'ui.step.submit': 'Submit',
 
 	// Global actions
 	'ui.actions.next': 'Next',
 	'ui.actions.back': 'Back',
 	'ui.actions.submit': 'Submit request',
+	'ui.actions.submitSending': 'Sending ...',
 
 	// Messages
 	'ui.messages.submitBlocked':
@@ -23,6 +25,7 @@ const en = {
 	'ui.messages.offlineSummaryLogged': 'A summary has been logged in the console (offline mode).',
 	'ui.messages.noOptionsSelected': 'No options selected.',
 	'ui.messages.noOptions': 'No options.',
+	'ui.messages.submitError': 'An error occurred. Please try again.',
 
 	// Errors
 	'ui.errors.required': '{field} is required.',
@@ -34,6 +37,7 @@ const en = {
 	'ui.errors.participantsMax': 'Maximum available: {count} participants.',
 	'ui.errors.dateDepartRequired': 'Departure date is required.',
 	'ui.errors.dateReturnMissing': 'Return date is missing.',
+	'ui.errors.selectMoto': 'Please select a motorcycle.',
 
 	// Home page
 	'ui.home.heading': 'Quote request form',
@@ -58,17 +62,24 @@ const en = {
 	'ui.fields.circuitPlaceholder': 'Choose a tour',
 	'ui.fields.durationLabel': 'Duration',
 	'ui.fields.distanceLabel': 'Distance',
+	'ui.fields.countryLabel': 'Country',
 
 	'ui.sections.formulaTitle': '2) Formula',
 	'ui.sections.formulaDescription': 'Please choose from the available formulas.',
 	'ui.sections.formulaNeedCircuit': 'Select a tour first to see the available formulas.',
 	'ui.fields.basePriceLabel': 'Base',
 	'ui.fields.remainingSeatsLabel': 'Remaining spots',
+	'ui.fields.includesMotoLabel': 'Moto included',
+	'ui.fields.includesAccommodationLabel': 'Accommodation included',
+	'ui.fields.includesMealsLabel': 'Meals included',
+	'ui.fields.yes': 'Yes',
+	'ui.fields.no': 'No',
 
 	'ui.sections.participantsTitle': '3) Participants',
 	'ui.sections.participantsDescription':
 		'Enter the total number of participants. The maximum depends on remaining spots for the formula.',
 	'ui.fields.participantsCountLabel': 'Number of participants',
+	'ui.sections.datesDescription': 'Select the departure date. The return date is calculated automatically.',
 
 	'ui.sections.infoOptionsTitle': '4) Information & options',
 	'ui.sections.contactTitle': 'Main contact',
@@ -82,11 +93,25 @@ const en = {
 	'ui.fields.returnDateComputedLabel': 'Return date (calculated)',
 
 	'ui.sections.optionsTitle': 'Options',
+	'ui.sections.optionsDescription': 'Choose bonuses and additional services.',
 	'ui.sections.optionsNeedFormula': 'Select a formula to display the available options.',
+	'ui.sections.motoTitle': 'Motorcycle',
+	'ui.sections.accommodationTitle': 'Accommodation',
+	'ui.sections.bonusTitle': 'Bonuses & options',
+
+	'ui.fields.motoRentLabel': 'I rent a motorcycle',
+	'ui.fields.motoOwnLabel': 'I bring my own motorcycle',
+	'ui.fields.motoPlaceholder': 'Select a motorcycle',
+	'ui.fields.accommodationPlaceholder': 'Select accommodation',
+	'ui.fields.optionIncludedLabel': 'Included',
+	'ui.fields.motoSelectionLabel': 'Motorcycle',
+	'ui.fields.accommodationLabel': 'Accommodation',
+	'ui.fields.optionsTotalLabel': 'Options total',
 
 	'ui.sections.summaryTitle': 'Summary',
 	'ui.fields.formulaLabel': 'Formula',
 	'ui.fields.baseLabel': 'Base',
+	'ui.fields.formulaPriceLabel': 'Formula price',
 	'ui.sections.selectedOptionsTitle': 'Selected options',
 	'ui.fields.totalEstimatedSingle': 'Estimated total',
 	'ui.fields.totalEstimatedIndividual': 'Estimated individual total',
@@ -95,6 +120,7 @@ const en = {
 	'ui.sections.submitTitle': '5) Submit',
 	'ui.sections.submitDescription': 'Review the summary and send your request.',
 	'ui.sections.quoteSummaryTitle': 'Your quote',
+	'ui.sections.submitReminder': 'Information is sent without authentication.',
 	'ui.fields.participantsLabel': 'Participants',
 	'ui.fields.departureLabel': 'Departure',
 	'ui.fields.returnLabel': 'Return',
